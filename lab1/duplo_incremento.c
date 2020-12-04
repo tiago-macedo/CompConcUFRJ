@@ -25,6 +25,7 @@ void* increment(void* _interval);
 // Global vars //
 //=============//
 
+extern int errno;
 int vector[N];
 
 
