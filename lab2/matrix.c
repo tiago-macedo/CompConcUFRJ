@@ -11,6 +11,9 @@
 
 #define HELP help(argv[0])	// Para exibir mensagem de ajuda
 
+//	Os macros a seguir definem as palavras chaves "debug" e "production",
+//	responsáveis por marcar quais comandos/funções devem ser executadas
+//	apenas em builds de debugação ou produção.
 #ifdef DEBUG
 	#define debug if (1)
 	#define production if (0)
@@ -35,8 +38,8 @@ float randfloat();	// Gera número aleatório entre MAX e MIN
 
 
 // VARIÁVEIS GLOBAIS ==============
-int dim;
-int threadnum;
+int dim;	// dimensão das matrizes
+int threadnum;	// número de threads
 float* A;	// 1a matriz de entrada
 float* B;	// 2a matriz de entrada
 float* C;	// matriz resultado
@@ -59,7 +62,8 @@ int main(int argc, char* argv[]) {
 
 	if (threadnum > dim) threadnum = dim;
 	
-	float start, finish, total;
+	// Variáveis de timing
+	double start, finish, total;
 	
 	// Alocando e inicializando matrizes
 	GET_TIME(start);
@@ -81,7 +85,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	GET_TIME(finish);
-	printf("Inicialização de estruturas de dados: %f segundos.\n", finish-start);
+	printf("%lf	Inicialização de estruturas de dados\n", finish-start);
 
 	// Exibindo matrizes de entrada
 	debug printf("A:\n");
@@ -107,7 +111,7 @@ int main(int argc, char* argv[]) {
 		pthread_join(threads[k], NULL);
 	}
 	GET_TIME(finish);
-	printf("Criação de threads, mult. de matrizes: %f segundos.\n", finish-start);
+	printf("%lf	Criação de threads, mult. de matrizes\n", finish-start);
 	
 	// Exibição do resultado
 	debug printf("C:\n");
@@ -120,15 +124,18 @@ int main(int argc, char* argv[]) {
 	free(C);
 	for (int k=0; k<threadnum; k++) free(args[k]);
 	GET_TIME(finish);
-	printf("Liberação de memória: %f segundos.\n", finish-start);
+	printf("%lf	Liberação de memória\n", finish-start);
 	total = finish-total;
-	printf("Tempo total: %f segundos.\n", total);
+	printf("--------\n");
+	printf("%lf	Tempo total.\n", total);
 
 	return 0;
 }
 
 
 // FUNÇÕES ======================
+
+// Exibe mensagem de ajuda
 void help(char* name) {
 	printf(	"Uso:\n"
 			"	%s <DIMENSION> <THREADS>\n"
@@ -139,12 +146,13 @@ void help(char* name) {
 			, name);
 }
 
+// Função a ser executada por cada thread
 void* task(void* void_arg) {
-	tharg arg = (tharg) void_arg;
-	debug printf("thread %d\n", arg->id);
+	tharg arg = (tharg) void_arg;	// recuperando o argumento
+	debug printf("Thread %d criada.\n", arg->id);
 	for (int e=arg->id; e<dim*dim; e+=threadnum) {
 		// Estamos em M[e/dim][e%dim].
-		debug printf(	"[%d] elemento [%d][%d] (%d)\n",
+		debug printf(	"thread %d calculando C[%d][%d] (%d)\n",
 						arg->id, e/dim, e%dim, e );
 		for (int k=0; k<dim; k++) {
 			C[e] += A[dim*(e/dim) + k] * B[dim*k + e%dim];
@@ -153,7 +161,7 @@ void* task(void* void_arg) {
 	pthread_exit(0);
 }
 
-
+// Imprime a matriz
 void printm(float* M) {
 	for (int i=0; i<dim; i++) {
 		printf("| ");
@@ -164,7 +172,7 @@ void printm(float* M) {
 	}
 }
 
-
+// Retorna um float aleatório
 float randfloat() {
 	return ( (float)rand()/(float)RAND_MAX ) * (MAX-MIN) + MIN; 
 }
