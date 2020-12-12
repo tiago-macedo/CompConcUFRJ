@@ -1,6 +1,6 @@
 CC = gcc
-FLAGS = -Wall -pedantic
-DEBUG_FLAGS = -g
+FLAGS = -Wall -pedantic -lpthread
+DEBUG_FLAGS = -g -D DEBUG
 PROD_FLAGS = -O3
 EXEC = matrix
 
