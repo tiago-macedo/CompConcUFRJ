@@ -13,8 +13,10 @@
 
 #ifdef DEBUG
 	#define debug if (1)
+	#define production if (0)
 #else
 	#define debug if (0)
+	#define production if(1)
 #endif
 
 
@@ -57,7 +59,12 @@ int main(int argc, char* argv[]) {
 
 	if (threadnum > dim) threadnum = dim;
 	
+	float start, finish, total;
+	
 	// Alocando e inicializando matrizes
+	GET_TIME(start);
+	total = start;
+	
 	A = malloc(dim * dim * sizeof(float));
 	B = malloc(dim * dim * sizeof(float));
 	C = calloc(dim*dim, sizeof(float));
@@ -67,12 +74,15 @@ int main(int argc, char* argv[]) {
 	}
 	
 	for (int k=0; k<dim*dim; k++) {
-		A[k] = randfloat();
-		B[k] = randfloat();
-//		A[k] = 1;		
-//		B[k] = 1;
+		production A[k] = randfloat();
+		production B[k] = randfloat();
+		debug A[k] = 1;		
+		debug B[k] = 1;
 	}
-	
+
+	GET_TIME(finish);
+	printf("Inicialização de estruturas de dados: %f segundos.\n", finish-start);
+
 	// Exibindo matrizes de entrada
 	debug printf("A:\n");
 	debug printm(A);
@@ -80,6 +90,7 @@ int main(int argc, char* argv[]) {
 	debug printm(B);
 	
 	// Multiplicação de matrizes
+	GET_TIME(start);
 	// Alocação de estruturas
 	pthread_t threads[threadnum];
 	tharg args[threadnum];
@@ -91,21 +102,28 @@ int main(int argc, char* argv[]) {
 		pthread_create(&(threads[k]), NULL, task, (void*)args[k]);
 	}
 	
-	// Espera do retorno das threads e liberação dos argumentos
+	// Espera pelo término das threads e liberação dos argumentos
 	for (int k=0; k<threadnum; k++) {
 		pthread_join(threads[k], NULL);
-		free(args[k]);
 	}
+	GET_TIME(finish);
+	printf("Criação de threads, mult. de matrizes: %f segundos.\n", finish-start);
 	
 	// Exibição do resultado
 	debug printf("C:\n");
 	debug printm(C);
 	
 	// Liberação de memória
+	GET_TIME(start);
 	free(A);
 	free(B);
 	free(C);
-	
+	for (int k=0; k<threadnum; k++) free(args[k]);
+	GET_TIME(finish);
+	printf("Liberação de memória: %f segundos.\n", finish-start);
+	total = finish-total;
+	printf("Tempo total: %f segundos.\n", total);
+
 	return 0;
 }
 
