@@ -11,7 +11,12 @@
 
 #define HELP help(argv[0])	// Para exibir mensagem de ajuda
 
-#define debug: if (DEBUG)
+#ifdef DEBUG
+	#define debug if (1)
+#else
+	#define debug if (0)
+#endif
+
 
 // STRUCTS =============
 typedef struct {
@@ -69,10 +74,10 @@ int main(int argc, char* argv[]) {
 	}
 	
 	// Exibindo matrizes de entrada
-debug:	prinft("A:\n");
-debug:	printm(A);
-debug:	printf("B:\n");
-debug:	printm(B);
+	debug printf("A:\n");
+	debug printm(A);
+	debug printf("B:\n");
+	debug printm(B);
 	
 	// Multiplicação de matrizes
 	// Alocação de estruturas
@@ -93,8 +98,8 @@ debug:	printm(B);
 	}
 	
 	// Exibição do resultado
-debug:	printf("C:\n");
-debug:	printm(C);
+	debug printf("C:\n");
+	debug printm(C);
 	
 	// Liberação de memória
 	free(A);
@@ -118,11 +123,11 @@ void help(char* name) {
 
 void* task(void* void_arg) {
 	tharg arg = (tharg) void_arg;
-	printf("thread %d\n", arg->id);
+	debug printf("thread %d\n", arg->id);
 	for (int e=arg->id; e<dim*dim; e+=threadnum) {
 		// Estamos em M[e/dim][e%dim].
-		printf(	"[%d] elemento [%d][%d] (%d)\n",
-				arg->id, e/dim, e%dim, e );
+		debug printf(	"[%d] elemento [%d][%d] (%d)\n",
+						arg->id, e/dim, e%dim, e );
 		for (int k=0; k<dim; k++) {
 			C[e] += A[dim*(e/dim) + k] * B[dim*k + e%dim];
 		}
