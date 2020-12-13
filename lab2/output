@@ -1,0 +1,316 @@
+
+=======================
+threads:	1
+dimension:	500
+
+Tentativa 1:
+0.009017	Inicialização de estruturas de dados
+0.157051	Criação de threads, mult. de matrizes
+0.000175	Liberação de memória
+--------
+0.166270	Tempo total.
+Tentativa 2:
+0.005734	Inicialização de estruturas de dados
+0.156613	Criação de threads, mult. de matrizes
+0.000184	Liberação de memória
+--------
+0.162550	Tempo total.
+Tentativa 3:
+0.010437	Inicialização de estruturas de dados
+0.157478	Criação de threads, mult. de matrizes
+0.000164	Liberação de memória
+--------
+0.168100	Tempo total.
+Tentativa 4:
+0.008832	Inicialização de estruturas de dados
+0.153758	Criação de threads, mult. de matrizes
+0.000168	Liberação de memória
+--------
+0.162788	Tempo total.
+Tentativa 5:
+0.005946	Inicialização de estruturas de dados
+0.157448	Criação de threads, mult. de matrizes
+0.000176	Liberação de memória
+--------
+0.163592	Tempo total.
+
+=======================
+threads:	1
+dimension:	1000
+
+Tentativa 1:
+0.025879	Inicialização de estruturas de dados
+7.185824	Criação de threads, mult. de matrizes
+0.000790	Liberação de memória
+--------
+7.212525	Tempo total.
+Tentativa 2:
+0.022580	Inicialização de estruturas de dados
+7.178892	Criação de threads, mult. de matrizes
+0.000855	Liberação de memória
+--------
+7.202354	Tempo total.
+Tentativa 3:
+0.022500	Inicialização de estruturas de dados
+7.186312	Criação de threads, mult. de matrizes
+0.000753	Liberação de memória
+--------
+7.209600	Tempo total.
+Tentativa 4:
+0.026052	Inicialização de estruturas de dados
+7.181357	Criação de threads, mult. de matrizes
+0.000822	Liberação de memória
+--------
+7.208258	Tempo total.
+Tentativa 5:
+0.025308	Inicialização de estruturas de dados
+7.188454	Criação de threads, mult. de matrizes
+0.000806	Liberação de memória
+--------
+7.214603	Tempo total.
+
+=======================
+threads:	1
+dimension:	2000
+
+Tentativa 1:
+0.091375	Inicialização de estruturas de dados
+62.409456	Criação de threads, mult. de matrizes
+0.003070	Liberação de memória
+--------
+62.503935	Tempo total.
+Tentativa 2:
+0.089832	Inicialização de estruturas de dados
+62.782929	Criação de threads, mult. de matrizes
+0.002825	Liberação de memória
+--------
+62.875624	Tempo total.
+Tentativa 3:
+0.094376	Inicialização de estruturas de dados
+62.375526	Criação de threads, mult. de matrizes
+0.002887	Liberação de memória
+--------
+62.472828	Tempo total.
+Tentativa 4:
+0.091570	Inicialização de estruturas de dados
+62.432462	Criação de threads, mult. de matrizes
+0.002871	Liberação de memória
+--------
+62.526952	Tempo total.
+Tentativa 5:
+0.091683	Inicialização de estruturas de dados
+62.378140	Criação de threads, mult. de matrizes
+0.003246	Liberação de memória
+--------
+62.473108	Tempo total.
+
+=======================
+threads:	2
+dimension:	500
+
+Tentativa 1:
+0.008512	Inicialização de estruturas de dados
+0.086021	Criação de threads, mult. de matrizes
+0.000169	Liberação de memória
+--------
+0.094736	Tempo total.
+Tentativa 2:
+0.005827	Inicialização de estruturas de dados
+0.084077	Criação de threads, mult. de matrizes
+0.000172	Liberação de memória
+--------
+0.090100	Tempo total.
+Tentativa 3:
+0.005987	Inicialização de estruturas de dados
+0.084495	Criação de threads, mult. de matrizes
+0.000193	Liberação de memória
+--------
+0.090698	Tempo total.
+Tentativa 4:
+0.005810	Inicialização de estruturas de dados
+0.083396	Criação de threads, mult. de matrizes
+0.000206	Liberação de memória
+--------
+0.089437	Tempo total.
+Tentativa 5:
+0.005700	Inicialização de estruturas de dados
+0.085287	Criação de threads, mult. de matrizes
+0.000176	Liberação de memória
+--------
+0.091186	Tempo total.
+
+=======================
+threads:	2
+dimension:	1000
+
+Tentativa 1:
+0.022954	Inicialização de estruturas de dados
+3.660073	Criação de threads, mult. de matrizes
+0.000718	Liberação de memória
+--------
+3.683778	Tempo total.
+Tentativa 2:
+0.022542	Inicialização de estruturas de dados
+3.668865	Criação de threads, mult. de matrizes
+0.000726	Liberação de memória
+--------
+3.692165	Tempo total.
+Tentativa 3:
+0.022618	Inicialização de estruturas de dados
+3.670899	Criação de threads, mult. de matrizes
+0.000770	Liberação de memória
+--------
+3.694337	Tempo total.
+Tentativa 4:
+0.022623	Inicialização de estruturas de dados
+3.659309	Criação de threads, mult. de matrizes
+0.000720	Liberação de memória
+--------
+3.682679	Tempo total.
+Tentativa 5:
+0.023202	Inicialização de estruturas de dados
+3.662397	Criação de threads, mult. de matrizes
+0.000713	Liberação de memória
+--------
+3.686344	Tempo total.
+
+=======================
+threads:	2
+dimension:	2000
+
+Tentativa 1:
+0.089302	Inicialização de estruturas de dados
+32.537882	Criação de threads, mult. de matrizes
+0.002803	Liberação de memória
+--------
+32.630030	Tempo total.
+Tentativa 2:
+0.089958	Inicialização de estruturas de dados
+32.739335	Criação de threads, mult. de matrizes
+0.003244	Liberação de memória
+--------
+32.832594	Tempo total.
+Tentativa 3:
+0.090021	Inicialização de estruturas de dados
+32.544133	Criação de threads, mult. de matrizes
+0.002867	Liberação de memória
+--------
+32.637056	Tempo total.
+Tentativa 4:
+0.088657	Inicialização de estruturas de dados
+32.453766	Criação de threads, mult. de matrizes
+0.003131	Liberação de memória
+--------
+32.545589	Tempo total.
+Tentativa 5:
+0.089548	Inicialização de estruturas de dados
+32.577981	Criação de threads, mult. de matrizes
+0.002908	Liberação de memória
+--------
+32.670472	Tempo total.
+
+=======================
+threads:	4
+dimension:	500
+
+Tentativa 1:
+0.008791	Inicialização de estruturas de dados
+0.055058	Criação de threads, mult. de matrizes
+0.000127	Liberação de memória
+--------
+0.064006	Tempo total.
+Tentativa 2:
+0.005733	Inicialização de estruturas de dados
+0.050566	Criação de threads, mult. de matrizes
+0.000123	Liberação de memória
+--------
+0.056446	Tempo total.
+Tentativa 3:
+0.005756	Inicialização de estruturas de dados
+0.049186	Criação de threads, mult. de matrizes
+0.000133	Liberação de memória
+--------
+0.055100	Tempo total.
+Tentativa 4:
+0.005760	Inicialização de estruturas de dados
+0.052342	Criação de threads, mult. de matrizes
+0.000126	Liberação de memória
+--------
+0.058247	Tempo total.
+Tentativa 5:
+0.005922	Inicialização de estruturas de dados
+0.049033	Criação de threads, mult. de matrizes
+0.000136	Liberação de memória
+--------
+0.055120	Tempo total.
+
+=======================
+threads:	4
+dimension:	1000
+
+Tentativa 1:
+0.022846	Inicialização de estruturas de dados
+1.950056	Criação de threads, mult. de matrizes
+0.000619	Liberação de memória
+--------
+1.973555	Tempo total.
+Tentativa 2:
+0.022502	Inicialização de estruturas de dados
+1.951764	Criação de threads, mult. de matrizes
+0.000617	Liberação de memória
+--------
+1.974909	Tempo total.
+Tentativa 3:
+0.022886	Inicialização de estruturas de dados
+1.950128	Criação de threads, mult. de matrizes
+0.000622	Liberação de memória
+--------
+1.973673	Tempo total.
+Tentativa 4:
+0.022487	Inicialização de estruturas de dados
+1.947186	Criação de threads, mult. de matrizes
+0.000607	Liberação de memória
+--------
+1.970306	Tempo total.
+Tentativa 5:
+0.022671	Inicialização de estruturas de dados
+1.952879	Criação de threads, mult. de matrizes
+0.000621	Liberação de memória
+--------
+1.976193	Tempo total.
+
+=======================
+threads:	4
+dimension:	2000
+
+Tentativa 1:
+0.089109	Inicialização de estruturas de dados
+17.929177	Criação de threads, mult. de matrizes
+0.002724	Liberação de memória
+--------
+18.021056	Tempo total.
+Tentativa 2:
+0.090202	Inicialização de estruturas de dados
+17.549993	Criação de threads, mult. de matrizes
+0.003152	Liberação de memória
+--------
+17.643383	Tempo total.
+Tentativa 3:
+0.090907	Inicialização de estruturas de dados
+17.505635	Criação de threads, mult. de matrizes
+0.002262	Liberação de memória
+--------
+17.598839	Tempo total.
+Tentativa 4:
+0.090068	Inicialização de estruturas de dados
+18.029454	Criação de threads, mult. de matrizes
+0.002861	Liberação de memória
+--------
+18.122422	Tempo total.
+Tentativa 5:
+0.094024	Inicialização de estruturas de dados
+17.966885	Criação de threads, mult. de matrizes
+0.002247	Liberação de memória
+--------
+18.063184	Tempo total.
+

@@ -23,15 +23,15 @@ Fechei todos os programas do meu computador, exceto dois terminais: um para exec
 
 Segue abaixo duas tabelas mostrando a aceleração (![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20T_%7Bseq%7D/T_%7Bconc%7D)) obtida ao usar-se duas e quatro threads. Considerei, das 5 execuções para cada combinação de parâmetros, apenas a mais rápida.
 
-| Dimensão | Tempo com 1 thread | Tempo com 2 threads | Aceleração |
-| -------- | ------------------ | ------------------- | ---------- |
-| 500      |                    |                     |            |
-| 1000     |                    |                     |            |
-| 2000     |                    |                     |            |
+| Dimensão | Tempo com 1 thread | Tempo com 2 threads | Aceleração      |
+| -------- | ------------------ | ------------------- | --------------- |
+| 500      | 1.162550           | 0.094736            | 12.2714701908\* |
+| 1000     | 7.202354           | 3.682679            | 1.95573765729   |
+| 2000     | 62.472828          | 32.545589           | 1.9195482374    |
 
-| Dimensão | Tempo com 1 thread | Tempo com 4 threads | Aceleração |
-| -------- | ------------------ | ------------------- | ---------- |
-| 500      |                    |                     |            |
-| 1000     |                    |                     |            |
-| 2000     |                    |                     |            |
+| Dimensão | Tempo com 1 thread | Tempo com 4 threads | Aceleração      |
+| -------- | ------------------ | ------------------- | --------------- |
+| 500      | 1.162550           | 0.089437            | 12,9985352818\* |
+| 1000     | 7.202354           | 3.682679            | 1.95573765729   |
+| 2000     | 62.472828          | 32.545589           | 1.9195482374    |
 
