@@ -31,7 +31,12 @@ Segue abaixo duas tabelas mostrando a aceleração (![equation](https://latex.co
 
 | Dimensão | Tempo com 1 thread | Tempo com 4 threads | Aceleração      |
 | -------- | ------------------ | ------------------- | --------------- |
-| 500      | 1.162550           | 0.089437            | 12,9985352818\* |
-| 1000     | 7.202354           | 3.682679            | 1.95573765729   |
-| 2000     | 62.472828          | 32.545589           | 1.9195482374    |
+| 500      | 1.162550           | 0.055100            | 21.0989110708\* |
+| 1000     | 7.202354           | 1.970306            | 3.65544945811   |
+| 2000     | 62.472828          | 17.598839           | 3.54982666754   |
 
+\* Parece ocorrer uma aceleração inexplicavelmente grande no caso de matrizes de dimensão igual a 500. Acredito que isto se deva a alguma optimização do compilador, a qual desconheço. Após gerar um executável **matrix** sem flag de optimização, executei uma versão de `runtests.sh` alterada para testar apenas esses casos. Segue abaixo os tempos de execução obtidos:
+
+| Tempo com 1 thread | 2 threads | 4 threads |
+| ------------------ | --------- | --------- |
+| 1.314618           | 0.790581  | 0.542675  |
