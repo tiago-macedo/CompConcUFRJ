@@ -17,6 +17,21 @@ O argumento passado a cada thread é um struct que acabou contendo apenas um cam
 
 # Resultados
 
-O script `runtests.sh` é usado para executar o programa **matrix** 3 vezes para cada combinação de dimensão e número de threads. As dimensões usadas foram 500, 1000 e 2000. Os números de threads usados foram 1, 2 e 4. O script coloca a saída dessas execuções num arquivo de texto chamado `output`.
+O script `runtests.sh` é usado para executar o programa **matrix** (compilado com `make build`) cinco vezes para cada combinação de dimensão e número de threads. As dimensões usadas foram 500, 1000 e 2000. Os números de threads usados foram 1, 2 e 4. O script coloca a saída dessas execuções num arquivo de texto chamado `output`.
 
-Fechei todos os programas do meu computador, exceto dois terminais: um para executar `runtests.sh`, e o outro para observar o estado do arquivo `output` usando o programa `tail`. Uma exemplo de `output` é incluido no repositório.
+Fechei todos os programas do meu computador, exceto dois terminais: um para executar `runtests.sh`, e o outro para observar o estado do arquivo `output` usando o programa `tail`. Um exemplo de `output` é incluido no repositório.
+
+Segue abaixo duas tabelas mostrando a aceleração (![equation](https://latex.codecogs.com/gif.latex?%5Cinline%20T_%7Bseq%7D/T_%7Bconc%7D)) obtida ao usar-se duas e quatro threads. Considerei, das 5 execuções para cada combinação de parâmetros, apenas a mais rápida.
+
+| Dimensão | Tempo com 1 thread | Tempo com 2 threads | Aceleração |
+| -------- | ------------------ | ------------------- | ---------- |
+| 500      |                    |                     |            |
+| 1000     |                    |                     |            |
+| 2000     |                    |                     |            |
+
+| Dimensão | Tempo com 1 thread | Tempo com 4 threads | Aceleração |
+| -------- | ------------------ | ------------------- | ---------- |
+| 500      |                    |                     |            |
+| 1000     |                    |                     |            |
+| 2000     |                    |                     |            |
+

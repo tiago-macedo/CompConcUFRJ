@@ -16,6 +16,10 @@ do
 		./matrix $dim $threadnum >> output
 		echo -e "Tentativa 3:" >> output
 		./matrix $dim $threadnum >> output
-		echo -e "" >> output
+		echo -e "Tentativa 4:" >> output
+		./matrix $dim $threadnum >> output
+		echo -e "Tentativa 5:" >> output
+		./matrix $dim $threadnum >> output
+	echo -e "" >> output
 	done
 done
