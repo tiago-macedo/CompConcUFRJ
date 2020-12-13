@@ -102,6 +102,10 @@ int main(int argc, char* argv[]) {
 	// Inicialização dos argumentos e disparada das threads
 	for (int k=0; k<threadnum; k++) {
 		args[k] = malloc(sizeof(tharg));
+		if (!args[k]) {
+			printf("Falha ao alocar memória para argumento de thread %d\n", k);
+			return 2;
+		}
 		args[k]->id = k;
 		pthread_create(&(threads[k]), NULL, task, (void*)args[k]);
 	}
