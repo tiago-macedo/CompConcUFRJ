@@ -1,7 +1,7 @@
 CC = gcc
 FLAGS = -Wall -pedantic -lpthread -lm
 EXEC = pi
-SRCS = main.c safety.c
+SRCS = main.c
 
 all: build
 

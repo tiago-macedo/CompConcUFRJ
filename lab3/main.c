@@ -69,6 +69,7 @@ int main(int argc, char* argv[]) {
 			return 4;
 		}
 		sumConc += *local_sum;
+		free(local_sum);
 	}
 	GET_TIME(end);
 	printf("%.15lfs	<- tempo da parte concorrente\n", end-start);
@@ -83,7 +84,8 @@ int main(int argc, char* argv[]) {
 			sumConc);
 	
 	// Liberando memória
-	
+	free(ids);
+	free(threads);
 	return 0;
 }
 
