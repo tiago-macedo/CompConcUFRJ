@@ -1,5 +1,5 @@
 CC = gcc
-FLAGS = -Wall -pedantic -lpthread
+FLAGS = -Wall -pedantic -lpthread -lm
 EXEC = pi
 SRCS = main.c safety.c
 
