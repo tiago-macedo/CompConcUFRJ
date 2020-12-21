@@ -33,9 +33,10 @@ int main(int argc, char* argv[]) {
 	
 	// Conta sequencial
 	GET_TIME(start);
-	long double sumSeq = 0;
-	for (long long int n=1.; n <= N; n++)
+	long double sumSeq = 0.L;
+	for (long long int n=1; n<=N ; n++) {
 		sumSeq += sign(n) * 4.L/(2*n - 1);
+	}
 	
 	GET_TIME(end);
 	printf("%.15lfs	<- tempo da parte sequencial\n", end-start);
@@ -77,8 +78,8 @@ int main(int argc, char* argv[]) {
 	
 	// Exibindo resultados
 	printf(	"math.h:    π = %.20lf\n"
-			"sumSeq:    π = %.20Lf : diff = %.20Lf\n"
-			"sumConc:   π = %.20Lf : diff = %.20Lf\n",
+			"sumSeq:    π = %.20Lf : diff = %Le\n"
+			"sumConc:   π = %.20Lf : diff = %Le\n",
 			M_PI,
 			sumSeq, M_PI - sumSeq,
 			sumConc, M_PI - sumConc);
@@ -109,7 +110,7 @@ void* task(void* arg) {
 		exit(5);
 	}
 	*sum = 0L;
-	for (unsigned long long int n=id+1; n<=N; n+=n_threads) {
+	for (long long int n=id+1; n<=N; n+=n_threads) {
 		*sum += sign(n) * 4.L / (2*n - 1) ;
 	}
 	pthread_exit(sum);
