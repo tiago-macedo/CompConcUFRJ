@@ -3,7 +3,12 @@ FLAGS = -Wall -pedantic -lpthread -lm
 EXEC = pi
 SRCS = main.c safety.c
 
-all: $(SRCS)
+all: build
+
+debug: FLAGS += -g
+debug: build
+
+build: $(SRCS)
 	$(CC) $(SRCS) $(FLAGS) -o $(EXEC)
 	chmod +x $(EXEC)
 
