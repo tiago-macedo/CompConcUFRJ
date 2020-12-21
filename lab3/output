@@ -1,0 +1,126 @@
+
+=======================
+threads:	2
+dimension:	1000
+
+Tentativa 1:
+0.000013898999896s	<- tempo da parte sequencial
+0.000444995999715s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14059265383979292654
+sumConc:   π = 3.14059265383979291982
+
+Tentativa 2:
+0.000013687997125s	<- tempo da parte sequencial
+0.000372171001800s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14059265383979292654
+sumConc:   π = 3.14059265383979291982
+
+Tentativa 3:
+0.000013671000488s	<- tempo da parte sequencial
+0.000363918999938s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14059265383979292654
+sumConc:   π = 3.14059265383979291982
+
+Tentativa 4:
+0.000014017001376s	<- tempo da parte sequencial
+0.000362935003068s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14059265383979292654
+sumConc:   π = 3.14059265383979291982
+
+Tentativa 5:
+0.000013780998415s	<- tempo da parte sequencial
+0.000384934999602s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14059265383979292654
+sumConc:   π = 3.14059265383979291982
+
+
+=======================
+threads:	2
+dimension:	100000
+
+Tentativa 1:
+0.001129978998506s	<- tempo da parte sequencial
+0.000905760000023s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14158265358979349176
+sumConc:   π = 3.14158265358979358998
+
+Tentativa 2:
+0.001130079002905s	<- tempo da parte sequencial
+0.000926950000576s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14158265358979349176
+sumConc:   π = 3.14158265358979358998
+
+Tentativa 3:
+0.001129873999162s	<- tempo da parte sequencial
+0.000917621997360s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14158265358979349176
+sumConc:   π = 3.14158265358979358998
+
+Tentativa 4:
+0.001146059999883s	<- tempo da parte sequencial
+0.000666350999381s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14158265358979349176
+sumConc:   π = 3.14158265358979358998
+
+Tentativa 5:
+0.001139089999924s	<- tempo da parte sequencial
+0.000650936999591s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14158265358979349176
+sumConc:   π = 3.14158265358979358998
+
+
+=======================
+threads:	2
+dimension:	10000000
+
+Tentativa 1:
+0.060817527999461s	<- tempo da parte sequencial
+0.033105898000940s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14159255358979309708
+sumConc:   π = 3.14159255358979218678
+
+Tentativa 2:
+0.056727913997747s	<- tempo da parte sequencial
+0.034180295999249s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14159255358979309708
+sumConc:   π = 3.14159255358979218678
+
+Tentativa 3:
+0.056887856000685s	<- tempo da parte sequencial
+0.033818970001448s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14159255358979309708
+sumConc:   π = 3.14159255358979218678
+
+Tentativa 4:
+0.057219397000154s	<- tempo da parte sequencial
+0.034403964000376s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14159255358979309708
+sumConc:   π = 3.14159255358979218678
+
+Tentativa 5:
+0.056650639999134s	<- tempo da parte sequencial
+0.032841814001586s	<- tempo da parte concorrente
+math.h:    π = 3.14159265358979311600
+sumSeq:    π = 3.14159255358979309708
+sumConc:   π = 3.14159255358979218678
+
+
+=======================
+threads:	2
+dimension:	1000000000
+
+Tentativa 1:

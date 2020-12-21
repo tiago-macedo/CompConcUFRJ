@@ -77,11 +77,11 @@ int main(int argc, char* argv[]) {
 	
 	// Exibindo resultados
 	printf(	"math.h:    π = %.20lf\n"
-			"sumSeq:    π = %.20Lf\n"
-			"sumConc:   π = %.20Lf\n",
+			"sumSeq:    π = %.20Lf : diff = %.20Lf\n"
+			"sumConc:   π = %.20Lf : diff = %.20Lf\n",
 			M_PI,
-			sumSeq,
-			sumConc);
+			sumSeq, M_PI - sumSeq,
+			sumConc, M_PI - sumConc);
 	
 	// Liberando memória
 	free(ids);
