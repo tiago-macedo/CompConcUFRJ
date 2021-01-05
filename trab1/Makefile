@@ -10,7 +10,7 @@ FLAGS = -Wall -pedantic -lpthread -I $(INC_DIR)
 
 all: build
 
-debug: FLAGS += -g
+debug: FLAGS += -g -D DEBUG
 debug: build
 
 test: FLAGS += -D TEST

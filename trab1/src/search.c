@@ -23,26 +23,38 @@ int cap_files_list;
 int main(int argc, char* argv[]) {
 	// getting the command line arguments
 	int opt;
-	while ((opt = getopt(argc, argv, ":l")) != -1) {
+	while ((opt = getopt(argc, argv, "h?l:")) != -1) {
 		switch (opt) {
 			case 'l':
 				printf("level %d\n", atoi(optarg));
 				break;
+			case 'h':
+			case '?':
+				help();
+				return 0;
 		}
 	}
-	for (; optind < argc; optind++) {
-		printf("resto: %s\n", argv[optind]);
+	// root directory
+	char* rootname;
+	if (optind < argc) {
+		rootname = argv[optind];
+		optind++;
+	} else {
+		rootname = ".";
 	}
+	printf("root name: %s\n", rootname);
+	
 	// Gerar lista de diretórios
 	// e arquivos para analisar
 	//============================
 	
-	// initializing global vriables
+	// initializing global variables
 	files_list = malloc(MIN_SIZE_FILES * sizeof(NODE));
 	cap_files_list = MIN_SIZE_FILES;
 	
-	// creating first node in the tree
+ 	// creating first node in the tree
 	NODE root;
+	root.name = rootname;
 	
 	/*
 	int n;
