@@ -21,6 +21,9 @@ int cap_files_list;
 //=======
 
 int main(int argc, char* argv[]) {
+
+/*
+
 	// getting the command line arguments
 	int opt;
 	while ((opt = getopt(argc, argv, "h?l:")) != -1) {
@@ -68,6 +71,10 @@ int main(int argc, char* argv[]) {
 	
 	// Percorrer lista, analisando
 	//============================
-	
+
+*/
+	FILE* file = fopen("Makefile", "r");
+	location place = find("build", file);
+	printf("line %lu column %lu\n", place->line, place->character);
 	return 0;
 }

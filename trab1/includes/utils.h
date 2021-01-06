@@ -40,6 +40,10 @@ typedef struct _NODE {
 	char ** dirs;	// array of names of subdirectories
 } NODE, *node;
 
+typedef struct {
+	long unsigned int line;
+	long unsigned int character;
+} LOCATION, *location;
 
 //=============
 // PROTOTYPES
@@ -58,6 +62,15 @@ void help();
  * @return	number of subdirectories
  */
 int fillnode(node n);
+
+/*
+ * Looks for a string inside a file.
+ *
+ * @param string	string to look for inside file
+ * @param file		file where to look for string
+ * @return			location of where string is, null if not found
+ */
+location find(char* string, FILE* file);
 
 /*
  * The following three functions are wrappers around malloc,

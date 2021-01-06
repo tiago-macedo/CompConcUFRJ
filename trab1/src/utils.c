@@ -34,6 +34,26 @@ int fillnode(node n) {
 	return n_dirs;
 }
 
+location find(char* string, FILE* file) {
+	long unsigned int line_num = 1;
+	char* line = NULL;
+	char* match;
+	size_t limit = 0;
+	while (!feof(file)) {
+		getline(&line, &limit, file);
+		match = strstr(line, string);
+		if (match) break;
+		line_num++;
+	}
+	if (!match) return NULL;
+	long unsigned int c = 0;
+	for (; line+c != match; c++);
+	location found = smalloc(sizeof(LOCATION), WHERE);
+	found->line = line_num;
+	found->character = (int) c;
+	return found;
+}
+
 void* smalloc(size_t size, char* file, const char* func, int line) {
 	void* ptr = malloc(size);
 	if (!ptr) {
