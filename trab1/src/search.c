@@ -55,17 +55,16 @@ int main(int argc, char* argv[]) {
  	// creating first node in the tree
 	NODE root;
 	root.name = rootname;
+	fillnode(&root);
 	
-	/*
-	int n;
-	char** dirs = ls(".", &n);
-	printf("number of directories: %d\n", n);
-	for (int i=0; i<n; i++) {
-		printf("%s\n", dirs[i]);
-		free(dirs[i]);
+	for (int i=0;  i<root.n_dirs; i++) {
+		free(root.dirs[i]);
 	}
-	free(dirs);
-	*/
+	for (int i=0;  i<root.n_files; i++) {
+		free(root.files[i]);
+	}
+	free(root.dirs);
+	free(root.files);
 	
 	// Percorrer lista, analisando
 	//============================

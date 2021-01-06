@@ -26,10 +26,10 @@ int fillnode(node n) {
 	int n_files;
 	int n_dirs;
 	char** files = lsfile(n->name, &n_files);
-	char** dirs = lsdir(n->name, &n_dirs); //TODO: create this function
-	n->num_files = n_files;
-	n->num_dirs = n_dirs;
-	n->file_names = files;
-	n->dir_names = dirs;
+	char** dirs = lsdir(n->name, &n_dirs);
+	n->n_files = n_files;
+	n->n_dirs = n_dirs;
+	n->files = files;
+	n->dirs = dirs;
 	return n_dirs;
 }

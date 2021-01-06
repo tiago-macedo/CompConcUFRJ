@@ -19,14 +19,14 @@
 
 /*
  * Creates and returns a list of dirents (dirent.h),
- * consisting of all directories and files under the
+ * consisting of all subdirectories under the
  * given directory.
  *
  * @param dirname	name of directory to look into
  * @param lim		pointer to integer that recieves number of files
  * @return			array of directory entries (char*). Must be freed later!
  */
-char** ls(const char* dirname, int* lim);
+char** lsfile(const char* dirname, int* lim);
 
 
 /*

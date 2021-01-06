@@ -5,7 +5,7 @@
 
 #include "ls.h"
 
-char** ls(const char* dirname, int* lim) {
+char** lsfile(const char* dirname, int* lim) {
 	DIR* dirptr;
 	unsigned long int capacity = 4;
 	struct dirent* direntry;
@@ -18,8 +18,7 @@ char** ls(const char* dirname, int* lim) {
 	
 	int i=0;
 	for (; (direntry = readdir(dirptr)); i++) {
-		if (	!strcmp(direntry->d_name, ".") ||
-				!strcmp(direntry->d_name, "..") ) {
+		if ( direntry->d_type != DT_REG ) {
 			i--;
 			continue;
 		}

@@ -31,12 +31,10 @@
 
 typedef struct _NODE {
 	char* name;		// name of the file/directory
-	int num_files;	// number of files here
-	int num_dirs;	// number of subdirectories
-	char** file_names;	// array of names of files
-	char ** dir_names;	// array of names of subdirectories
-	struct _NODE** files;	// array of pointers to file nodes
-	struct _NODE** dirs;	// array of pointers to subdir nodes
+	int n_files;	// number of files here
+	int n_dirs;	// number of subdirectories
+	char** files;	// array of names of files
+	char ** dirs;	// array of names of subdirectories
 } NODE, *node;
 
 
