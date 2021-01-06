@@ -15,6 +15,7 @@
 
 #define STR(x) XSTR(x)	// this is needed so that...
 #define XSTR(x) #x		// this works on macros like EXEC_NAME.
+
 // The definitions bellow are an ugly hack to help debugging.
 // I'm having some trouble installing gdb on my pc currently.
 // If you're reading this, it means I forgot to erase this.
@@ -24,6 +25,8 @@
 #else
 	#define HEY ;
 #endif
+
+#define WHERE __FILE__, __func__, __LINE__
 
 //==========
 // STRUCTS
@@ -55,5 +58,19 @@ void help();
  * @return	number of subdirectories
  */
 int fillnode(node n);
+
+/*
+ * The following three functions are wrappers around malloc,
+ * calloc and realloc that check if those functions returned
+ * NULL and, if so, print an error message and abort the program.
+ * Example: "scalloc(33, sizof(char), WHERE);
+ *
+ * @param file	name of the file where alloc was called
+ * @param func	name of the function from where alloc as caled
+ * @param line	line number where alloc was called
+ */
+void* smalloc(size_t size, char* file, const char* func, int line);
+void* scalloc(size_t n, size_t size, char* file, const char* func, int line);
+void* srealloc(void* ptr, size_t size, char* file, const char* func, int line);
 
 #endif // UTILS_H

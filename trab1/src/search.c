@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 	//============================
 	
 	// initializing global variables
-	files_list = malloc(MIN_SIZE_FILES * sizeof(NODE));
+	files_list = smalloc(MIN_SIZE_FILES * sizeof(NODE), WHERE);
 	cap_files_list = MIN_SIZE_FILES;
 	
  	// creating first node in the tree

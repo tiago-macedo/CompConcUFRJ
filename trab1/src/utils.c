@@ -33,3 +33,42 @@ int fillnode(node n) {
 	n->dirs = dirs;
 	return n_dirs;
 }
+
+void* smalloc(size_t size, char* file, const char* func, int line) {
+	void* ptr = malloc(size);
+	if (!ptr) {
+		printf(	"==> Error in call to malloc.\n"
+				"File:	%s\n"
+				"Func:	%s\n"
+				"Line:	%d\n",
+				file, func, line );
+		exit(1);
+	}
+	return ptr;
+}
+
+void* scalloc(size_t n, size_t size, char* file, const char* func, int line) {
+	void* ptr = calloc(n, size);
+	if (!ptr) {
+		printf(	"==> Error in call to calloc.\n"
+				"File:	%s\n"
+				"Func:	%s\n"
+				"Line:	%d\n",
+				file, func, line );
+		exit(1);
+	}
+	return ptr;
+}
+
+void* srealloc(void* ptr, size_t size, char* file, const char* func, int line) {
+	void* new_ptr = realloc(ptr, size);
+	if (!new_ptr) {
+		printf(	"==> Error in call to realloc.\n"
+				"File:	%s\n"
+				"Func:	%s\n"
+				"Line:	%d\n",
+				file, func, line );
+		exit(1);
+	}
+	return ptr;
+}

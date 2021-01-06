@@ -4,12 +4,13 @@
 //=============================
 
 #include "ls.h"
+#include "utils.h"
 
 char** lsfile(const char* dirname, int* lim) {
 	DIR* dirptr;
 	unsigned long int capacity = 4;
 	struct dirent* direntry;
-	char** list = malloc(capacity * sizeof(char*));
+	char** list = smalloc(capacity * sizeof(char*), WHERE);
 	
 	if (! (dirptr = opendir(dirname)) ) {
 		printf("opendir error\n"); //TODO: better error handling
@@ -22,11 +23,11 @@ char** lsfile(const char* dirname, int* lim) {
 			i--;
 			continue;
 		}
-		list[i] = malloc(256 * sizeof(char));
+		list[i] = smalloc(256 * sizeof(char), WHERE);
 		strcpy(list[i], direntry->d_name);
 		if (i == capacity-1) {
 			capacity *= 2;
-			list = realloc(list, capacity*sizeof(struct dirent));
+			list = srealloc(list, capacity*sizeof(struct dirent), WHERE);
 			//TODO: error handling!
 		}
 	}
@@ -39,7 +40,7 @@ char** lsdir(const char* dirname, int* lim) {
 	DIR* dirptr;
 	unsigned long int capacity = 4;
 	struct dirent* direntry;
-	char** list = malloc(capacity * sizeof(char*));
+	char** list = smalloc(capacity * sizeof(char*), WHERE);
 	
 	if (! (dirptr = opendir(dirname)) ) {
 		printf("opendir error\n"); //TODO: better error handling
@@ -54,11 +55,11 @@ char** lsdir(const char* dirname, int* lim) {
 			i--;
 			continue;
 		}
-		list[i] = malloc(256 * sizeof(char));
+		list[i] = smalloc(256 * sizeof(char), WHERE);
 		strcpy(list[i], direntry->d_name);
 		if (i == capacity-1) {
 			capacity *= 2;
-			list = realloc(list, capacity*sizeof(struct dirent));
+			list = srealloc(list, capacity*sizeof(struct dirent), WHERE);
 			//TODO: error handling!
 		}
 	}
