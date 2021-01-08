@@ -68,6 +68,7 @@ int main(int argc, char* argv[]) {
 	// Run through list, analysing
 	//============================
 	
+	recSearch(string, &root);
 	
 	// Free everything
 	//================
@@ -81,10 +82,6 @@ int main(int argc, char* argv[]) {
 	free(root.dirs);
 	free(root.files);
 	
-
-
-	location place = find(string, "Makefile");
-	printf("line %lu column %lu\n", place->line, place->character);
 	return 0;
 }
 
@@ -92,11 +89,15 @@ void recSearch(char* string, node n) {
 	fillnode(n);
 	// Apply find() on every subfile
 	char subfilename[BUF_SIZE_FULLNAME];
+	location l;
 	for (int i=0; i<n->n_files; i++) {
 		strcpy(subfilename, n->name);
 		strcat(subfilename, "/");
 		strcat(subfilename, n->files[i]);
-		find(string, subfilename);
+		l = find(string, subfilename);
+		if (l) { // Found it!
+			printf("%s:\n	line %lu column %lu\n", subfilename, l->line, l->character);
+		}
 	}
 	// The recursive part
 	for (int i=0; i<n->n_dirs; i++) {
