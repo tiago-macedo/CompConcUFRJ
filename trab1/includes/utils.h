@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include "ls.h"
 
 
 //=========
@@ -35,9 +36,9 @@
 typedef struct _NODE {
 	char* name;		// name of the file/directory
 	int n_files;	// number of files here
-	int n_dirs;	// number of subdirectories
+	int n_dirs;		// number of subdirectories
 	char** files;	// array of names of files
-	char ** dirs;	// array of names of subdirectories
+	char** dirs;	// array of names of subdirectories
 } NODE, *node;
 
 typedef struct {
@@ -67,10 +68,10 @@ int fillnode(node n);
  * Looks for a string inside a file.
  *
  * @param string	string to look for inside file
- * @param file		file where to look for string
+ * @param filename	file where to look for string
  * @return			location of where string is, null if not found
  */
-location find(char* string, FILE* file);
+location find(char* string, char* filename);
 
 /*
  * The following three functions are wrappers around malloc,

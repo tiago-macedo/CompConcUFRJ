@@ -1,5 +1,4 @@
 #include "utils.h"
-#include "ls.h"
 
 //============
 // FUNCTIONS
@@ -7,16 +6,16 @@
 
 void help() {
 	printf(	"NAME:\n"
-			"	%s\n -- search file contents for match\n"
+			"	%s -- search file contents for match\n"
 			"\n"
 			"USAGE:\n"
-			"	%s [ROOT] [-l LEVEL]\n"
+			"	%s STRING -d [DIR] "/* [-l LEVEL] */" [-h]\n"
 			"\n"
 			"OPTIONS:\n"
-			"	ROOT:\n"
-			"		directory from where to start search. If none is given, \".\" is assumed.\n"
-			"	-l LEVEL:\n"
-			"		Search all files up to LEVEL layers deep into the file hierarchy.\n",
+			"	STRING:		String to search for."
+			"	-d DIR:		Directory from where to start search. If none is given, \".\" is assumed.\n"
+//			"	-l LEVEL:	Search all files up to LEVEL layers deep into the file hierarchy.\n"
+			"	-h		Show this help message.\n",
 			STR(EXEC_NAME),
 			STR(EXEC_NAME)
 			);
@@ -34,7 +33,13 @@ int fillnode(node n) {
 	return n_dirs;
 }
 
-location find(char* string, FILE* file) {
+location find(char* string, char* filename) {
+	FILE* file = fopen(filename, "r");
+	if (!file) {
+		//TODO: even better error handling! With errno!
+		printf("Problem opening file %s\nAborting.\n", filename);
+		exit(2);
+	}
 	long unsigned int line_num = 1;
 	char* line = NULL;
 	char* match;
@@ -45,6 +50,7 @@ location find(char* string, FILE* file) {
 		if (match) break;
 		line_num++;
 	}
+	fclose(file);
 	if (!match) return NULL;
 	long unsigned int c = 0;
 	for (; line+c != match; c++);

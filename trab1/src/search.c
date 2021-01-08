@@ -1,12 +1,11 @@
 #include "search.h"
-#include "utils.h"
-#include "ls.h"
 
 //=========
 // MACROS
 //=========
 
 #define MIN_SIZE_FILES (4)
+#define BUF_SIZE_FULLNAME (1024)
 
 
 //==========
@@ -16,39 +15,45 @@
 node files_list;
 int cap_files_list;
 
+
 //=======
 // MAIN
 //=======
 
 int main(int argc, char* argv[]) {
-
-/*
-
+	// root directory
+	char* rootname = ".";
+	
 	// getting the command line arguments
 	int opt;
-	while ((opt = getopt(argc, argv, "h?l:")) != -1) {
+	while ((opt = getopt(argc, argv, "hd:l:")) != -1) {
 		switch (opt) {
+			case 'h':
+				help();
+				return 0;
+			case 'd':
+				rootname = optarg;
+				break;
 			case 'l':
 				printf("level %d\n", atoi(optarg));
 				break;
-			case 'h':
-			case '?':
-				help();
-				return 0;
 		}
 	}
-	// root directory
-	char* rootname;
+	
+	// String to be searched
+	char* string;
 	if (optind < argc) {
-		rootname = argv[optind];
+		string = argv[optind];
 		optind++;
 	} else {
-		rootname = ".";
+		printf("No string to be searched was given.\n\n");
+		help();
+		return 4;
 	}
 	printf("root name: %s\n", rootname);
 	
-	// Gerar lista de diretórios
-	// e arquivos para analisar
+	// Generate directory and
+	// files list for analysis
 	//============================
 	
 	// initializing global variables
@@ -60,6 +65,13 @@ int main(int argc, char* argv[]) {
 	root.name = rootname;
 	fillnode(&root);
 	
+	// Run through list, analysing
+	//============================
+	
+	
+	// Free everything
+	//================
+	
 	for (int i=0;  i<root.n_dirs; i++) {
 		free(root.dirs[i]);
 	}
@@ -69,12 +81,31 @@ int main(int argc, char* argv[]) {
 	free(root.dirs);
 	free(root.files);
 	
-	// Percorrer lista, analisando
-	//============================
 
-*/
-	FILE* file = fopen("Makefile", "r");
-	location place = find("build", file);
+
+	location place = find(string, "Makefile");
 	printf("line %lu column %lu\n", place->line, place->character);
 	return 0;
+}
+
+void recSearch(char* string, node n) {
+	fillnode(n);
+	// Apply find() on every subfile
+	char subfilename[BUF_SIZE_FULLNAME];
+	for (int i=0; i<n->n_files; i++) {
+		strcpy(subfilename, n->name);
+		strcat(subfilename, "/");
+		strcat(subfilename, n->files[i]);
+		find(string, subfilename);
+	}
+	// The recursive part
+	for (int i=0; i<n->n_dirs; i++) {
+		strcpy(subfilename, n->name);
+		strcat(subfilename, "/");
+		strcat(subfilename, n->dirs[i]);
+		node subdir = smalloc(sizeof(NODE), WHERE);
+		subdir->name = subfilename;
+		recSearch(string, subdir);
+		free(subdir);
+	}
 }
