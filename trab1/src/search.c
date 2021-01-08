@@ -24,7 +24,8 @@ char* string;
 
 int main(int argc, char* argv[]) {
 	// default settings
-	char* rootname = ".";
+	char rootname[BUF_SIZE_FULLNAME];
+	getcwd(rootname, sizeof(rootname));
 	nthreads = 1;
 	
 	// getting the command line arguments
@@ -35,7 +36,7 @@ int main(int argc, char* argv[]) {
 				help();
 				return 0;
 			case 'd':
-				rootname = optarg;
+				strcpy(rootname, optarg);
 				break;
 			case 't':
 				nthreads = atoi(optarg);
@@ -102,15 +103,7 @@ int main(int argc, char* argv[]) {
 	// Free everything
 	//================
 	
-	for (int i=0;  i<root->n_dirs; i++) {
-		free(root->dirs[i]);
-	}
-	for (int i=0;  i<root->n_files; i++) {
-		free(root->files[i]);
-	}
-	free(root->dirs);
-	free(root->files);
-	free(root);
+	freenode(root);
 	
 	return 0;
 }
@@ -128,6 +121,7 @@ void recSearch(char* string, node n) {
 		if (l) { // Found it!
 			printf("%s:\n	line %lu column %lu\n", subfilename, l->line, l->character);
 		}
+		free(l);
 	}
 	// The recursive part
 	for (int i=0; i<n->n_dirs; i++) {
@@ -137,7 +131,7 @@ void recSearch(char* string, node n) {
 		node subdir = smalloc(sizeof(NODE), WHERE);
 		subdir->name = subfilename;
 		recSearch(string, subdir);
-		free(subdir);
+		freenode(subdir);
 	}
 }
 
@@ -156,6 +150,7 @@ void* simpleSearchThread(void* arg) {
 						root->name,
 						root->files[i],
 						l->line, l->character);
+		free(l);
 	}
 	
 	pthread_exit(NULL);
@@ -169,7 +164,7 @@ void* recSearchThread(void* arg) {
 		sub = smalloc(sizeof(NODE), WHERE);
 		sub->name = root->dirs[i];
 		recSearch(string, sub);
-		free(sub);
+		freenode(sub);
 	}
 	pthread_exit(NULL);
 }

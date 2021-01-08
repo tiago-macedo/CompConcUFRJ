@@ -29,6 +29,9 @@
 
 #define WHERE __FILE__, __func__, __LINE__
 
+#define MAX_LINE_CHARS 1024
+
+
 //==========
 // STRUCTS
 //==========
@@ -63,6 +66,11 @@ void help();
  * @return	number of subdirectories
  */
 int fillnode(node n);
+
+/*
+ * Does what the name sugests.
+ */
+void freenode(node n);
 
 /*
  * Looks for a string inside a file.

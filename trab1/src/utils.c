@@ -34,6 +34,18 @@ int fillnode(node n) {
 	return n_dirs;
 }
 
+void freenode(node n) {
+	for (int i = 0; i < n->n_dirs; i++) {
+		free(n->dirs[i]);
+	}
+	for (int i = 0; i < n->n_files; i++) {
+		free(n->files[i]);
+	}
+	free(n->dirs);
+	free(n->files);
+	free(n);
+}
+
 location find(char* string, char* filename) {
 	FILE* file = fopen(filename, "r");
 	if (!file) {
@@ -51,6 +63,7 @@ location find(char* string, char* filename) {
 		if (match) break;
 		line_num++;
 	}
+	if (line) free(line);
 	fclose(file);
 	if (!match) return NULL;
 	long unsigned int c = 0;

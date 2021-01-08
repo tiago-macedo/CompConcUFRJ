@@ -32,7 +32,7 @@ char** lsfile(const char* dirname, int* lim) {
 		}
 	}
 	*lim = i;
-	
+	closedir(dirptr);
 	return list;
 }
 
@@ -64,7 +64,7 @@ char** lsdir(const char* dirname, int* lim) {
 		}
 	}
 	*lim = i;
-	
+	closedir(dirptr);
 	return list;
 }
 
