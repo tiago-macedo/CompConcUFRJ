@@ -12,21 +12,24 @@
 // GLOBALS
 //==========
 
-node files_list;
-int cap_files_list;
-
+node root;
+int nthreads;
+int* tids;
+pthread_t* threads;
+char* string;
 
 //=======
 // MAIN
 //=======
 
 int main(int argc, char* argv[]) {
-	// root directory
+	// default settings
 	char* rootname = ".";
+	nthreads = 1;
 	
 	// getting the command line arguments
 	int opt;
-	while ((opt = getopt(argc, argv, "hd:l:")) != -1) {
+	while ((opt = getopt(argc, argv, "hd:t:l:")) != -1) {
 		switch (opt) {
 			case 'h':
 				help();
@@ -34,14 +37,15 @@ int main(int argc, char* argv[]) {
 			case 'd':
 				rootname = optarg;
 				break;
+			case 't':
+				nthreads = atoi(optarg);
+				break;
 			case 'l':
 				printf("level %d\n", atoi(optarg));
 				break;
 		}
 	}
 	
-	// String to be searched
-	char* string;
 	if (optind < argc) {
 		string = argv[optind];
 		optind++;
@@ -50,37 +54,63 @@ int main(int argc, char* argv[]) {
 		help();
 		return 4;
 	}
-	printf("root name: %s\n", rootname);
+	printf("Search in: %s\n", rootname);
 	
-	// Generate directory and
-	// files list for analysis
-	//============================
-	
-	// initializing global variables
-	files_list = smalloc(MIN_SIZE_FILES * sizeof(NODE), WHERE);
-	cap_files_list = MIN_SIZE_FILES;
+	// Initialize stuff
+	//=================
 	
  	// creating first node in the tree
-	NODE root;
-	root.name = rootname;
-	fillnode(&root);
+	root = smalloc(sizeof(NODE), WHERE);
+	root->name = rootname;
+	fillnode(root);
+	threads = smalloc(nthreads * sizeof(pthread_t), WHERE);
+	tids = smalloc(nthreads * sizeof(int), WHERE);
 	
-	// Run through list, analysing
-	//============================
+	// Start the search
+	//=================
 	
-	recSearch(string, &root);
+	// First we analyse the files in the search directory
+	for (int i=0; i<nthreads; i++) {
+		tids[i] = i;
+		if( pthread_create( &(threads[i]), NULL, simpleSearchThread, &(tids[i]) ) ) {
+			printf("Error creating thread.\n");
+			exit(6);
+		}
+	}
+	for (int i=0; i<nthreads; i++) {
+		if( pthread_join( threads[i], NULL ) ) {
+			printf("Error joining thread.\n");
+			exit(7);
+		}
+	}
+
+	// Then we start the recursive part
+	for (int i=0; i<nthreads; i++) {
+		tids[i] = i;
+		if( pthread_create( &(threads[i]), NULL, recSearchThread, &(tids[i]) ) ) {
+			printf("Error creating thread.\n");
+			exit(6);
+		}
+	}
+	for (int i=0; i<nthreads; i++) {
+		if( pthread_join( threads[i], NULL ) ) {
+			printf("Error joining thread.\n");
+			exit(7);
+		}
+	}
 	
 	// Free everything
 	//================
 	
-	for (int i=0;  i<root.n_dirs; i++) {
-		free(root.dirs[i]);
+	for (int i=0;  i<root->n_dirs; i++) {
+		free(root->dirs[i]);
 	}
-	for (int i=0;  i<root.n_files; i++) {
-		free(root.files[i]);
+	for (int i=0;  i<root->n_files; i++) {
+		free(root->files[i]);
 	}
-	free(root.dirs);
-	free(root.files);
+	free(root->dirs);
+	free(root->files);
+	free(root);
 	
 	return 0;
 }
@@ -109,4 +139,37 @@ void recSearch(char* string, node n) {
 		recSearch(string, subdir);
 		free(subdir);
 	}
+}
+
+void* simpleSearchThread(void* arg) {
+	int id = * (int*) arg;
+
+	location l;
+	char subfile[BUF_SIZE_FULLNAME];
+	for (int i = id; i < root->n_files; i += nthreads) {
+		strcpy(subfile, root->name);
+		strcat(subfile, "/");
+		strcat(subfile, root->files[i]);
+		l = find(string, subfile);
+		if (l) printf(	"%s/%s:\n"
+						"	line %lu column %lu\n",
+						root->name,
+						root->files[i],
+						l->line, l->character);
+	}
+	
+	pthread_exit(NULL);
+}
+
+void* recSearchThread(void* arg) {
+	int id = * (int*) arg;
+	node sub;
+	
+	for (int i=id; i < root->n_dirs; i += nthreads) {
+		sub = smalloc(sizeof(NODE), WHERE);
+		sub->name = root->dirs[i];
+		recSearch(string, sub);
+		free(sub);
+	}
+	pthread_exit(NULL);
 }

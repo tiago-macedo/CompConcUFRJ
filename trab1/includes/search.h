@@ -27,5 +27,17 @@
  */
 void recSearch(char* string, node n);
 
+/*
+ * Applies find() to some files in
+ * the root directory. To be executed
+ * by threads.
+ */
+void* simpleSearchThread(void* arg);
+
+/*
+ * Applies recSearch() to some directories.
+ * To be executed by threads.
+ */
+void* recSearchThread(void* arg);
 
 #endif // SEARCH_H

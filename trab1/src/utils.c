@@ -9,12 +9,13 @@ void help() {
 			"	%s -- search file contents for match\n"
 			"\n"
 			"USAGE:\n"
-			"	%s STRING -d [DIR] "/* [-l LEVEL] */" [-h]\n"
+			"	%s STRING [-d DIR] [-t THREADS]"/* [-l LEVEL] */" [-h]\n"
 			"\n"
 			"OPTIONS:\n"
-			"	STRING:		String to search for."
-			"	-d DIR:		Directory from where to start search. If none is given, \".\" is assumed.\n"
-//			"	-l LEVEL:	Search all files up to LEVEL layers deep into the file hierarchy.\n"
+			"	STRING		String to search for.\n"
+			"	-d DIR		Directory from where to start search. If none is given, \".\" is assumed.\n"
+			"	-t THREADS	Number of threads to use for search.\n"
+//			"	-l LEVEL	Search all files up to LEVEL layers deep into the file hierarchy.\n"
 			"	-h		Show this help message.\n",
 			STR(EXEC_NAME),
 			STR(EXEC_NAME)
