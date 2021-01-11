@@ -69,7 +69,7 @@ int main(void) {
 
 void* tudobem(void* arg) {
 	printf("tudo bem?\n");
-	
+
 	pthread_mutex_lock(&mutex);
 	saudacoes++;	// uma das saudações foi dita
 	pthread_cond_broadcast(&condicao);	// avisar pra galera
