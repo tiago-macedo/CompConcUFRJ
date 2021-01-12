@@ -72,7 +72,8 @@ void* tudobem(void* arg) {
 
 	pthread_mutex_lock(&mutex);
 	saudacoes++;	// uma das saudações foi dita
-	pthread_cond_broadcast(&condicao);	// avisar pra galera
+	if (saudacoes == 2)
+		pthread_cond_broadcast(&condicao);	// avisar pra galera
 	pthread_mutex_unlock(&mutex);
 	
 	pthread_exit(NULL);
@@ -84,7 +85,8 @@ void* bomdia(void* arg) {
 	
 	pthread_mutex_lock(&mutex);
 	saudacoes++;	// uma das saudações foi dita
-	pthread_cond_broadcast(&condicao);	// avisar pra galera
+	if (saudacoes == 2)
+		pthread_cond_broadcast(&condicao);	// avisar pra galera
 	pthread_mutex_unlock(&mutex);
 	
 	pthread_exit(NULL);
