@@ -21,3 +21,6 @@ build: $(SRCS)
 
 clean:
 	rm $(EXEC)
+
+valgrind:
+	valgrind --log-file=valgrind_log --leak-check=yes ./$(EXEC) alloc -t 4
