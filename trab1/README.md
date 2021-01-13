@@ -22,7 +22,6 @@ Não há risco de condição de corrida pois cada thread "toma para si" uma sub�
 
 ## Problemas:
 
-- Por algum motivo, o programa sofre falha de segmentação ao ser executado de fora de seu próprio diretório (`./trabalho1/sc abcde`). Não sei o que está causando esse bug, não tenho mais cabeça para programar por hoje, e a data final de entrega é hoje.
 - O programa não mostra mais de um "match" por arquivo -- se você pesquisar por "elefante" e um arquivo conter essa palavra duas vezes, apenas a primeira será mostrada.
 - É possível que algumas threads não sejam utilizadas, caso você peça para usar, por exemplo, 4 threads em uma pasta que só tem duas subpastas.
 - A documentação, apesar de não ser a pior do mundo, não está perfeita, e está em Inglês -- é difícil pensar em Português e progamar em Inglês!
