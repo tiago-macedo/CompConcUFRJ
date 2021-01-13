@@ -110,5 +110,5 @@ void* srealloc(void* ptr, size_t size, char* file, const char* func, int line) {
 				file, func, line );
 		exit(1);
 	}
-	return ptr;
+	return new_ptr;
 }

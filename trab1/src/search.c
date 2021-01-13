@@ -24,8 +24,7 @@ char* string;
 
 int main(int argc, char* argv[]) {
 	// default settings
-	char rootname[BUF_SIZE_FULLNAME];
-	getcwd(rootname, sizeof(rootname));
+	char *rootname = ".";
 	nthreads = 1;
 	
 	// getting the command line arguments
@@ -36,7 +35,7 @@ int main(int argc, char* argv[]) {
 				help();
 				return 0;
 			case 'd':
-				strcpy(rootname, optarg);
+				rootname = optarg;
 				break;
 			case 't':
 				nthreads = atoi(optarg);

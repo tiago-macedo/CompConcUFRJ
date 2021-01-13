@@ -17,16 +17,6 @@
 #define STR(x) XSTR(x)	// this is needed so that...
 #define XSTR(x) #x		// this works on macros like EXEC_NAME.
 
-// The definitions bellow are an ugly hack to help debugging.
-// I'm having some trouble installing gdb on my pc currently.
-// If you're reading this, it means I forgot to erase this.
-// Damn Arch Linux.
-#ifdef DEBUG
-	#define HEY printf("%s : line %d\n", __func__, __LINE__);
-#else
-	#define HEY ;
-#endif
-
 #define WHERE __FILE__, __func__, __LINE__
 
 #define MAX_LINE_CHARS 1024

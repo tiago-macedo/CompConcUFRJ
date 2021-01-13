@@ -13,7 +13,7 @@ char** lsfile(const char* dirname, int* lim) {
 	char** list = smalloc(capacity * sizeof(char*), WHERE);
 	
 	if (! (dirptr = opendir(dirname)) ) {
-		printf("opendir error\n"); //TODO: better error handling
+		printf("openfile error\n"); //TODO: better error handling
 		exit(2);
 	}
 	
@@ -27,8 +27,7 @@ char** lsfile(const char* dirname, int* lim) {
 		strcpy(list[i], direntry->d_name);
 		if (i == capacity-1) {
 			capacity *= 2;
-			list = srealloc(list, capacity*sizeof(struct dirent), WHERE);
-			//TODO: error handling!
+			list = srealloc(list, capacity*sizeof(char*), WHERE);
 		}
 	}
 	*lim = i;
@@ -59,7 +58,7 @@ char** lsdir(const char* dirname, int* lim) {
 		strcpy(list[i], direntry->d_name);
 		if (i == capacity-1) {
 			capacity *= 2;
-			list = srealloc(list, capacity*sizeof(struct dirent), WHERE);
+			list = srealloc(list, capacity*sizeof(char*), WHERE);
 			//TODO: error handling!
 		}
 	}
