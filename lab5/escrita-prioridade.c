@@ -40,10 +40,13 @@ pthread_cond_t cond_writters;
 // MAIN
 
 int main(int argc, char* argv[]) {
-	// Inicializando mutex
+	// Inicializando
 	pthread_mutex_init(&mtx, NULL);
 	pthread_cond_init(&cond_readers, NULL);
 	pthread_cond_init(&cond_writters, NULL);
+	reading = 0;
+	writting = 0;
+	wanna_write = 0;
 	
 	// 2: Disparar threads
 	int error;
