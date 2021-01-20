@@ -12,7 +12,11 @@
 
 // PROTÓTIPOS
 void* read(void*);	// thread de leitura
+void startRead();	// entra na leitura
+void endRead();		// sai da leitura
 void* write(void*);	// thread de escrita
+void startWrite();	// entra na escrita
+void endWrite();	// sai da escrita
 
 
 // VARIÁVEIS GLOBAIS
@@ -23,12 +27,22 @@ int mem[MEMORY];						// array onde ocorrerá leitura/escrita
 pthread_mutex_t mtx;					// direito de leitura/escrita
 #define LOCK(mtx) pthread_mutex_lock(&(mtx))
 #define UNLOCK(mtx) pthread_mutex_unlock(&(mtx))
+int writting;	// quantos estão escrevendo
+int reading;	// quantos estão lendo
+pthread_cond_t cond_readers;
+pthread_cond_t cond_writters;
+#define WAIT(c, m) pthread_cond_wait(&(c), &(m))
+#define BROAD(c) pthread_cond_broadcast(&(c))
+#define SIGNAL(c) pthread_cond_signal(&(c))
+
 
 // MAIN
 
 int main(int argc, char* argv[]) {
 	// Inicializando mutex
 	pthread_mutex_init(&mtx, NULL);
+	pthread_cond_init(&cond_readers, NULL);
+	pthread_cond_init(&cond_writters, NULL);
 	
 	// 2: Disparar threads
 	int error;
@@ -62,21 +76,39 @@ int main(int argc, char* argv[]) {
 void* read(void* arg) {
 	int id = *( (int*) arg );
 	int sum = 0;
-	LOCK(mtx);
+	
+	startRead();
 	printf("T%d: [ ", id);
 	for (int i=0; i<MEMORY; i++) {
 		printf("%d | ", mem[i]);
 		sum += mem[i];
 	}
 	printf("\n");
-	UNLOCK(mtx);
 	printf("T%d: média é %f\n", id, ((float)sum/MEMORY));
+	endRead();
+	
 	pthread_exit(NULL);
+}
+
+void startRead() {
+	LOCK(mtx);
+	while (writting > 0)
+		WAIT(cond_readers, mtx);
+	reading++;
+	UNLOCK(mtx);
+}
+
+void endRead() {
+	LOCK(mtx);
+	reading--;
+	if (reading == 0) SIGNAL(cond_writters);
+	UNLOCK(mtx);
 }
 
 void* write(void* arg) {
 	int id = *( (int*) arg );
-	LOCK(mtx);
+
+	startWrite();
 	mem[0] = id;
 	printf("T%d: [ %d | ", id, mem[0]);
 	for (int i=1; i<MEMORY-1; i++) {
@@ -85,7 +117,23 @@ void* write(void* arg) {
 	}
 	mem[MEMORY-1] = id;
 	printf("%d | <-- escrevi\n", mem[MEMORY-1]);
-	UNLOCK(mtx);
+	endWrite();
 	
 	pthread_exit(NULL);
+}
+
+void startWrite() {
+	LOCK(mtx);
+	while (reading > 0 || writting > 0)
+		WAIT(cond_writters, mtx);
+	writting++;
+	UNLOCK(mtx);
+}
+
+void endWrite() {
+	LOCK(mtx);
+	writting--;
+	SIGNAL(cond_writters);
+	BROAD(cond_readers);
+	UNLOCK(mtx);
 }
