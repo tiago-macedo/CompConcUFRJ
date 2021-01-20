@@ -61,7 +61,6 @@ int main(int argc, char* argv[]) {
 
 void* read(void* arg) {
 	int id = *( (int*) arg );
-	printf("T%d (leitura) criada.\n", id);
 	int sum = 0;
 	LOCK(mtx);
 	printf("T%d: [ ", id);
@@ -69,7 +68,7 @@ void* read(void* arg) {
 		printf("%d | ", mem[i]);
 		sum += mem[i];
 	}
-	printf("]\n");
+	printf("\n");
 	UNLOCK(mtx);
 	printf("T%d: média é %f\n", id, ((float)sum/MEMORY));
 	pthread_exit(NULL);
@@ -77,8 +76,6 @@ void* read(void* arg) {
 
 void* write(void* arg) {
 	int id = *( (int*) arg );
-	printf("T%d (escrita) criada.\n", id);
-
 	LOCK(mtx);
 	mem[0] = id;
 	printf("T%d: [ %d | ", id, mem[0]);
@@ -87,7 +84,7 @@ void* write(void* arg) {
 		printf("%d | ", mem[i]);
 	}
 	mem[MEMORY-1] = id;
-	printf("%d ] <-- escrevi\n", mem[MEMORY-1]);
+	printf("%d | <-- escrevi\n", mem[MEMORY-1]);
 	UNLOCK(mtx);
 	
 	pthread_exit(NULL);
