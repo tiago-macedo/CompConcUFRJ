@@ -1,11 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
+#include <math.h>
 
 
 // MACROS
-#define READERS	3
-#define WRITERS	3
-#define MEMORY	5
+#define READERS	4
+#define WRITERS	4
+#define MEMORY	10
 
 
 // PROTÓTIPOS
@@ -26,6 +28,7 @@ pthread_mutex_t mtx;					// direito de leitura/escrita
 #define LOCK(mtx) pthread_mutex_lock(&(mtx))
 #define UNLOCK(mtx) pthread_mutex_unlock(&(mtx))
 int writting;	// quantos estão escrevendo
+int wanna_write;	// quantos querem escrever
 int reading;	// quantos estão lendo
 pthread_cond_t cond_readers;
 pthread_cond_t cond_writters;
@@ -90,7 +93,7 @@ void* read(void* arg) {
 
 void startRead() {
 	LOCK(mtx);
-	while (writting > 0)
+	while (writting > 0 || wanna_write > 0)
 		WAIT(cond_readers, mtx);
 	reading++;
 	UNLOCK(mtx);
@@ -122,8 +125,11 @@ void* write(void* arg) {
 
 void startWrite() {
 	LOCK(mtx);
-	while (reading > 0 || writting > 0)
+	while (reading > 0 || writting > 0) {
+		wanna_write++;
 		WAIT(cond_writters, mtx);
+	}
+	wanna_write--;
 	writting++;
 	UNLOCK(mtx);
 }
