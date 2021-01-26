@@ -1,3 +1,12 @@
+/*
+ * Esta classe serve como "struct" do C,
+ * apenas para passar informações importantes
+ * para as threads de forma compacta.
+ *
+ * Por algum motivo, usar variáveis globais
+ * me parece ainda mais pecaminoso em Java
+ * do que em C, então optei por não fazê-lo.
+ */
 class ThreadStruct {
 	public int id;
 	public int num;
@@ -39,8 +48,8 @@ class Vetor {
 }
 
 class Th extends Thread {
-	private ThreadStruct info;
-	Vetor a, b, c;
+	private ThreadStruct info;	// contém id e número total de threads
+	Vetor a, b, c;				// faremos c <- a + b
 	
 	public Th(ThreadStruct _info, Vetor _a, Vetor _b, Vetor _c) { 
 		this.info = _info;
@@ -50,12 +59,12 @@ class Th extends Thread {
 	}
 	
 	public void run() {
-		for (	int i=this.info.id;
-				i<this.c.dim();
-				i+=this.info.num)
+		for (	int i = this.info.id;
+				i < this.c.dim();
+				i += this.info.num )
 		{
 			System.out.printf("Thread %d somando elemento %d\n", this.info.id, i);
-			this.c.set(i, this.a.get(i) + this.b.get(i));
+			this.c.set(i, this.a.get(i) + this.b.get(i));	// c[i] <- a[i] + b[i]
 		}
 	}
 }
@@ -83,8 +92,8 @@ class SomaVetores {
 		Vetor b = new Vetor(NElementos);
 		Vetor c = new Vetor(NElementos);
 		for (int i=0; i<NElementos; i++) {
-			a.set(i, i);
-			b.set(i, NElementos-i);
+			a.set(i, i);			// [ 0, 1, 2, ..., N-1 ]
+			b.set(i, NElementos-i);	// [ N-1, N-2, ..., 0 ]
 		}
 		System.out.print("a = ");
 		a.print();
