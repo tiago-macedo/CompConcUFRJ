@@ -1,6 +1,6 @@
 class ThreadStruct {
-	public static int id;
-	public static int num;
+	public int id;
+	public int num;
 	public ThreadStruct(int _id, int _num) {
 		this.id = _id;
 		this.num = _num;
@@ -27,25 +27,36 @@ class Vetor {
 	public synchronized int dim() {
 		return this.dim;
 	}
+	public void print() {
+		System.out.print("[ ");
+		for (int i=0; i<this.dim; i++) {
+			System.out.print(this.get(i));
+			System.out.print(" ");
+		}
+		System.out.println("]");
+	}
 	
 }
 
 class Th extends Thread {
-	private ThreadStruct threadInfo;
+	private ThreadStruct info;
 	Vetor a, b, c;
 	
-	public Th(ThreadStruct _threadInfo, Vetor _a, Vetor _b, Vetor _c) { 
-		this.threadInfo = _threadInfo;
+	public Th(ThreadStruct _info, Vetor _a, Vetor _b, Vetor _c) { 
+		this.info = _info;
 		this.a = _a;
 		this.b = _b;
 		this.c = _c;
 	}
 	
 	public void run() {
-		for (	int i=this.threadInfo.id;
+		for (	int i=this.info.id;
 				i<this.c.dim();
-				i+=this.threadInfo.num)
-			 this.c.set(i, this.a.get(i) + this.b.get(i));
+				i+=this.info.num)
+		{
+			System.out.printf("Thread %d somando elemento %d\n", this.info.id, i);
+			this.c.set(i, this.a.get(i) + this.b.get(i));
+		}
 	}
 }
 
@@ -71,7 +82,15 @@ class SomaVetores {
 		Vetor a = new Vetor(NElementos);
 		Vetor b = new Vetor(NElementos);
 		Vetor c = new Vetor(NElementos);
-		
+		for (int i=0; i<NElementos; i++) {
+			a.set(i, i);
+			b.set(i, NElementos-i);
+		}
+		System.out.print("a = ");
+		a.print();
+		System.out.print("b = ");
+		b.print();
+
 		// Cria as threads da aplicação:
 		for (int i=0; i<NThreads; i++) {
 			infos[i] = new ThreadStruct(i, NThreads);
@@ -93,11 +112,7 @@ class SomaVetores {
 		}
 		
 		// Imprime o resultado:
-		System.out.print("c = [ ");
-		for (int i=0; i<NElementos; i++) {
-			System.out.print(c.get(i));
-			System.out.print(" ");
-		}
-		System.out.print("]\n");
+		System.out.print("c = ");
+		c.print();
 	}
 }
