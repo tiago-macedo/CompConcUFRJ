@@ -10,8 +10,10 @@
 //    [CONSUMS] é a quantidade de threads consumidoras         //
 //=============================================================//
 
+
 import java.util.ArrayList;
 import java.util.Random;
+
 
 // Classe utilitária para gerar valores para o programa
 //-----------------------------------------------------
@@ -75,7 +77,7 @@ class SyncBuffer {
 	public synchronized Integer pop() {
 		while (this.num == 0) {	// se buffer vazio...	
 			try {
-				System.out.println("Buffer vazio!\nBotando thread em espera.");
+				System.out.println("└─ [MNT]: Buffer vazio!\nBotando thread em espera.");
 				wait();			// ...pause leitura
 			}
 			catch (InterruptedException e) {
@@ -83,18 +85,18 @@ class SyncBuffer {
 			}
 		}
 		notifyAll();
-		System.out.print("[MNT]: pop() = ");
+		System.out.print("└─ [MNT]: pop() = ");
 		this.num--;
 		Integer elem = this.buf.get(this.num);
 		this.buf.remove(this.num);
-		System.out.printf("%d: retirado da posição %d.\n", elem, this.num);
+		System.out.printf("%d retirado da posição %d.\n", elem, this.num);
 		return elem;
 	}
 	
 	public synchronized void push(Integer elem) {
 		while (this.num == cap)	{	// se buffer cheio...
 			try {
-				System.out.println("Buffer cheio!\nBotando thread em espera.");
+				System.out.println("└─ [MNT]: Buffer cheio!\nBotando thread em espera.");
 				wait();				// ...pause escrita
 			}
 			catch (InterruptedException e) {
@@ -102,7 +104,7 @@ class SyncBuffer {
 			}
 		}
 		notifyAll();
-		System.out.printf("[MNT]: push(%d): ", elem);
+		System.out.printf("└─ [MNT]: push(%d): ", elem);
 		this.buf.add(this.num, elem);
 		System.out.printf("adicionado em posição %d.\n", this.num);
 		this.num++;
