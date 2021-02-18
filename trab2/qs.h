@@ -58,4 +58,11 @@ int* array;	// array to be sorted
 part head;	// will point to beginning of chained list
 part tail;	// will point to end of chained list
 
+
+// Mutexes
+//----------
+
+pthread_mutex_t headMtx;
+pthread_mutex_t tailMtx;
+
 #endif // QS_H

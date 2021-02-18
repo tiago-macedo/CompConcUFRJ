@@ -20,15 +20,11 @@ int main(int argc, char* argv[]) {
 	//--------------------------------
 	array = malloc(MAX_SIZE * sizeof(int));
 	check(array);
-	head = NULL;
-	tail = NULL;
-	
-	
-	// Getting input:
-	//-----------------
+	pthread_mutex_init(&headMtx, NULL);
+	pthread_mutex_init(&tailMtx, NULL);
 	int x;
 	int i = 0;
-	while (i < MAX_SIZE && scanf("%d", &x) > 0)
+	while (i < 1024 && scanf("%d", &x) > 0)
 		array[i++] = x;
 	// i = number of elements in array
 	
@@ -53,11 +49,14 @@ int main(int argc, char* argv[]) {
 	pthread_t* threads = malloc(threadnum * sizeof(pthread_t));
 	check(threads);
 	
-	for (int j=0; j<threadnum; j++)
-		if (pthread_create(threads+j, NULL, task, NULL)) {
+	int* ids = malloc(threadnum * sizeof(int));
+	for (int j=0; j<threadnum; j++) {
+		ids[j] = j;
+		if (pthread_create(threads+j, NULL, task, ids+j)) {
 			printf("Erro criando thread %d.\n", j);
 			exit(-3);
 		}
+	}
 	
 
 	for (int j=0; j<threadnum; j++)
@@ -96,11 +95,15 @@ int main(int argc, char* argv[]) {
 //----------
 
 void* task(void* arg) {
-while (1) {
-	printList();
-	if (head == NULL) pthread_exit(NULL);
+	int id = * (int*) arg;
+	while (1) {
+		pthread_mutex_lock(&headMtx);
+		if (head == NULL) pthread_exit(NULL);
+		pthread_mutex_unlock(&headMtx);
 		part P = nextPart();
+		printf("thread %d pegou (%d, %d).\n", id, P->lo, P->hi);
 		quicksort(P);
+		printList();
 	}
 }
 
@@ -112,6 +115,7 @@ while (1) {
 void quicksort(part P) {
 	int lo = P->lo;
 	int hi = P->hi;
+	if (hi - lo == 1) return;
 	int p = partition(lo, hi);
 	pushPart(lo, p);
 	pushPart(p, hi);
@@ -119,8 +123,6 @@ void quicksort(part P) {
 }
 
 int partition(int lo, int hi) {
-	if (hi - lo == 1)
-		return lo;
 	int p = rand() % (hi-lo);
 	
 	while (1) {
@@ -141,24 +143,32 @@ int partition(int lo, int hi) {
 //-----------------------
 
 part nextPart() {
+	pthread_mutex_lock(&headMtx);
 	part P = head;
 	head = head->next;
+	pthread_mutex_unlock(&headMtx);
 	return P;
 }
 
 void pushPart(int _lo, int _hi) {
+	printf("Empurrando (%d, %d).\n", _lo, _hi);
+	pthread_mutex_lock(&tailMtx);
+	part P = malloc(sizeof(PART));
+	check(P);
+	P->lo = _lo;
+	P->hi = _hi;
 	if (tail) {
-		part P = malloc(sizeof(PART));
-		check(P);
-		P->lo = _lo;
-		P->hi = _hi;
 		tail->next = P;
 		P->prev = tail;
 		tail = P;
 	} else {
-		printf("pushPart em lista vazia.\n");
-		exit(-2);
+		tail = P;
 	}
+	pthread_mutex_unlock(&tailMtx);
+	pthread_mutex_lock(&headMtx);
+	if (!head) // if list had been emptied before
+		head = P;
+	pthread_mutex_unlock(&headMtx);
 }
 
 void delPart(part P) {
