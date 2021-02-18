@@ -9,6 +9,7 @@ debug: build
 
 build: qs.c qs.h
 	gcc qs.c $(FLAGS) -o qs
+	chmod +x qs
 
 .PHONY: test
 test:

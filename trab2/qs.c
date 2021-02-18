@@ -22,6 +22,9 @@ int main(int argc, char* argv[]) {
 	check(array);
 	pthread_mutex_init(&headMtx, NULL);
 	pthread_mutex_init(&tailMtx, NULL);
+
+	// Getting the input:
+	//---------------------
 	int x;
 	int i = 0;
 	while (i < 1024 && scanf("%d", &x) > 0)
@@ -101,9 +104,7 @@ void* task(void* arg) {
 		if (head == NULL) pthread_exit(NULL);
 		pthread_mutex_unlock(&headMtx);
 		part P = nextPart();
-		printf("thread %d pegou (%d, %d).\n", id, P->lo, P->hi);
 		quicksort(P);
-		printList();
 	}
 }
 
@@ -115,27 +116,41 @@ void* task(void* arg) {
 void quicksort(part P) {
 	int lo = P->lo;
 	int hi = P->hi;
-	if (hi - lo == 1) return;
-	int p = partition(lo, hi);
-	pushPart(lo, p);
-	pushPart(p, hi);
+	if (hi - lo > 1) {
+		int p = partition(lo, hi);
+		if (p-lo > 1) pushPart(lo, p);
+		if (hi-p > 1) pushPart(p+1, hi);
+	}
 	delPart(P);
 }
 
 int partition(int lo, int hi) {
-	int p = rand() % (hi-lo);
+	hi--;	// hi now indexes last element
+	int p = rand() % (hi-lo) + lo;
+	swap(p, hi);	// putting the pivot in the last place
+	int pivot = array[hi];
+	int i = lo-1;
+	int j = hi;
 	
 	while (1) {
-		while (array[lo] < array[p]) lo++;
-		while (array[hi] > array[p]) hi--;
-		if (lo < hi) {
-			int temp = array[lo];
-			array[lo] = array[hi];
-			array[hi] = temp;
-		} else
+		sleep(1);
+		// find element bigger than pivot:
+		do { i++; } while (array[i] < pivot);
+		// find element smaller than pivot:
+		do { j--; } while (array[j] > pivot);	
+		if (i < j)	// if they're in the wrong order...
+			swap(i, j);	// ...swap them.
+		else	// if not, it's over.
 			break;
 	}
-	return p;
+	swap(i, hi);	// swap pivot and first greater-than-pivot
+	return i;	// return pivot's position
+}
+
+void swap(int a, int b) {
+	int temp = array[a];
+	array[a] = array[b];
+	array[b] = temp;
 }
 
 
@@ -151,12 +166,13 @@ part nextPart() {
 }
 
 void pushPart(int _lo, int _hi) {
-	printf("Empurrando (%d, %d).\n", _lo, _hi);
 	pthread_mutex_lock(&tailMtx);
 	part P = malloc(sizeof(PART));
 	check(P);
 	P->lo = _lo;
 	P->hi = _hi;
+	P->next = NULL;
+	P->prev = NULL;
 	if (tail) {
 		tail->next = P;
 		P->prev = tail;
@@ -181,9 +197,11 @@ void delPart(part P) {
 
 void printList() {
 	part ptr = head;
+	int c = 0;
 	while (ptr) {
 		printf("(%d, %d)->", ptr->lo, ptr->hi);
 		ptr = ptr->next;
+		if (++c > 30) exit(-7);
 	}
 	printf("\n");
 }

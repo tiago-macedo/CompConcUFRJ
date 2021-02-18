@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
 
 
 //==========//
@@ -43,6 +44,7 @@ void* task(void* arg);	// thread function
 
 void quicksort(part P);	// quicksort, but pushes array part to list
 int partition(int lo, int hi);	// selects pivot, all elements less than pivot go before it and vice-versa
+void swap(int a, int b); // swaps elements a and b in the array
 
 part nextPart();	// returns next part of the array to be processed
 void pushPart(int _lo, int _hi);	// pushes new part into the list
