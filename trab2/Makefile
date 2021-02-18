@@ -1,4 +1,5 @@
 FLAGS = -Wall -pedantic -lpthread
+THREADS = 1
 
 all: build
 all: test
@@ -11,4 +12,4 @@ build: qs.c qs.h
 
 .PHONY: test
 test:
-	./qs < test
+	./qs $(THREADS) < test

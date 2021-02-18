@@ -15,9 +15,11 @@
 //  MACROS  //
 //==========//
 
-#define MAX_SIZE (1024)			// maximum size of input array
+#define MAX_SIZE (1024)		// maximum size of input array
 #define DFLT_N_THREADS (1)	// default number of threads
-#define check(ptr) { if (!ptr) {printf("Falha de malocação em %s, linha %d.\n", __func__, __LINE__); exit(-1); }
+
+// macro to check if return from allocation is NULL:
+#define check(ptr) { if (!ptr) {printf("Falha de alocação em %s, linha %d.\n", __func__, __LINE__); exit(-1); }}
 
 
 
@@ -37,14 +39,15 @@ typedef struct _PART {
 //  Prototypes  //
 //==============//
 
-void* task(void* arg);
+void* task(void* arg);	// thread function
 
-void quicksort(part P);
-int partition(int lo, int hi);
+void quicksort(part P);	// quicksort, but pushes array part to list
+int partition(int lo, int hi);	// selects pivot, all elements less than pivot go before it and vice-versa
 
-part nextPart();
-void pushPart(part P);
-void delPart(part P);
+part nextPart();	// returns next part of the array to be processed
+void pushPart(int _lo, int _hi);	// pushes new part into the list
+void delPart(part P);	// deletes part from the list
+void printList();	// prints the current list
 
 
 //===========//
