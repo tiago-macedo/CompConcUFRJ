@@ -42,13 +42,13 @@ typedef struct _PART {
 
 void* task(void* arg);	// thread function
 
-void quicksort(part P);	// quicksort, but pushes array part to list
-int partition(int lo, int hi);	// selects pivot, all elements less than pivot go before it and vice-versa
+void quicksort(part P, int id);	// quicksort, but pushes array part to list
+int partition(int lo, int hi, int id);	// selects pivot, all elements less than pivot go before it and vice-versa
 void swap(int a, int b); // swaps elements a and b in the array
 
-part nextPart();	// returns next part of the array to be processed
-void pushPart(int _lo, int _hi);	// pushes new part into the list
-void delPart(part P);	// deletes part from the list
+part nextPart(int id);	// returns next part of the array to be processed
+void pushPart(int _lo, int _hi, int id);	// pushes new part into the list
+void delPart(part P, int id);	// deletes part from the list
 void printList();	// prints the current list
 
 
@@ -59,6 +59,7 @@ void printList();	// prints the current list
 int* array;	// array to be sorted
 part head;	// will point to beginning of chained list
 part tail;	// will point to end of chained list
+int count;	// parts on the list or under processing by quicksort
 
 
 // Mutexes
@@ -66,5 +67,7 @@ part tail;	// will point to end of chained list
 
 pthread_mutex_t headMtx;
 pthread_mutex_t tailMtx;
+pthread_mutex_t countMtx;
+pthread_cond_t head_cond;
 
 #endif // QS_H
