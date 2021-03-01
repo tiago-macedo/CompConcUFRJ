@@ -5,6 +5,8 @@ all: test
 
 debug: FLAGS += -g -DDEBUG
 debug: build
+	@echo "======= debug ======="
+	@./p < test
 
 build: padroes.c
 	gcc padroes.c $(FLAGS) -o p
@@ -15,4 +17,4 @@ gerateste: gerateste.c
 .PHONY: test
 test:
 	@echo "====================="
-	./p < test
+	@./p < test

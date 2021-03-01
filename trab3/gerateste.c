@@ -18,7 +18,7 @@
 // ------------
 
 int main(int argc, char* argv[]) {
-	if (argc < 4) {
+	if (argc < 3) {
 		printf("Me dê mais argumentos.\n");
 		return -1;
 	}
@@ -26,11 +26,10 @@ int main(int argc, char* argv[]) {
 	int x;
 	char* filename = argv[1];
 	long long int N = strtoll(argv[2], NULL, 10);
-	int MAX = atoi(argv[3]);
 	FILE* fp = fopen(filename, "w");
 	fwrite(&N, sizeof(long long int), 1, fp);
 	for (int i=0; i<N; i++) {
-		x = rand() % MAX;
+		x = rand() % 5;
 		fwrite(&x, sizeof(int), 1, fp);
 	}
 	fclose(fp);
