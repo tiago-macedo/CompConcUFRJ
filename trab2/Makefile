@@ -1,4 +1,5 @@
 FLAGS = -Wall -pedantic -lpthread
+THREADS = 1
 
 all: build
 all: test
@@ -8,7 +9,8 @@ debug: build
 
 build: qs.c qs.h
 	gcc qs.c $(FLAGS) -o qs
+	chmod +x qs
 
 .PHONY: test
 test:
-	./qs < test
+	./qs $(THREADS) < test
