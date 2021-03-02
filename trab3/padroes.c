@@ -13,14 +13,22 @@
 
 
 
-// BUF_Macros
+// Macros
 // --------
 #define BUF_N (16)	// Qtd. de inteiros em cada buffer
 #define BUF_M (4)	// Qtd. de buffers
 #ifdef DEBUG
-#define LOG(msg, var) printf(msg, var)
+#define START pthread_mutex_lock(&out)
+#define LOG(msg, var)	printf("%11s: " msg, __func__, var); fflush(stdout)
+#define SLOG(msg, var)	printf(msg, var); fflush(stdout)
+#define SHOW()	for (int i=0; i<BUF_M; i++) { printf("[%d]", bufferAcc[i]); } printf("\n")
+#define END	pthread_mutex_unlock(&out)
 #else
+#define START ;
 #define LOG(msg, var) ;
+#define SLOG(msg, var)	;
+#define SHOW() ;
+#define END	;
 #endif
 
 
@@ -139,12 +147,31 @@ int main(int argc, char* argv[]) {
 // -----------
 
 void toBuffer() {
+	LOG("-------\n", 0);
 	int i = 0;	// em qual buffer vamos escrever
-	while ( fread(buffers[i], sizeof(int), BUF_N, stdin) == BUF_N )
+	
+	// Loop principal
+	while ( 1 ) {
+		int effective_read;
+		startWrite(i);	// a partir daqui, bufferAccMtx[i] é meu
+		
+		// Escrita
+		// ---------------
+		effective_read = fread(buffers[i], sizeof(int), BUF_N, stdin);
+		if ( effective_read == BUF_N ) {
+			LOG("escrevi em buffers[%i]\n", i);
+		} else {	// fread não leu todos os elementos que cabiam no buffer
+			buffers[i][effective_read] = -1;
+			sem_wait(&doneMtx);
+			done = 1;	// avisa pra galera que não tem mais arquivo pra ler
+			sem_post(&doneMtx);
+		}
+		// ----------------
+		
+		endWrite(i);	// larguei bufferAccMtx[i]
+		
 		i = (i+1) % BUF_M;
-	sem_wait(&doneMtx);
-	done = 1;	// Avisa pra galera que não tem mais arquivo pra ler
-	sem_post(&doneMtx);
+	}
 }
 
 // Threads
