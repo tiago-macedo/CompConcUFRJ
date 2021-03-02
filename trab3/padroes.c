@@ -24,6 +24,8 @@
 #endif
 
 
+
+
 // Structs
 // ------------
 
@@ -32,6 +34,7 @@ typedef struct _RET_MAISLONGA {
 	int size;			// tamanho da sequência
 	int val;			// valor da sequência
 } RET_MAISLONGA;
+
 
 
 
@@ -44,6 +47,10 @@ void* maislonga(void*);	// Thread que cata seq. de números maislonga
 void* trincas(void*);	// Thread que cata seq. de três números iguais
 void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 
+void startRead(int);	// Antecede leitura de buffer
+void endRead(int);		// Sucede leitura de buffer
+void startWrite(int);	// Antecede escrita em buffer
+void endWrite(int);		// Sucede escrita em buffer
 
 
 
@@ -53,8 +60,13 @@ void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 int* buffers[BUF_M];	// Array de ponteiros para buffers
 long long int size;		// Quantodade de inteiros no arquivo
 char done;				// 0 enquanto leitura do arquivo ainda estiver ocorrendo
+int bufferAcc[BUF_M];	// Conta quantas threads já leram buffer desde última escrita
 // Semáforos
-sem_t doneMtx;	// Mutex para guardar variável done
+sem_t doneMtx;							// Mutex para guardar variável done
+// Condicionais
+pthread_cond_t waitFor[BUF_M];			// Bota threads em espera para ler/escrever num buffer
+// Mutexes
+pthread_mutex_t bufferAccMtx[BUF_M];	// Regula acesso aos buffers
 // Threads
 pthread_t T1;
 pthread_t T2;
@@ -67,11 +79,20 @@ pthread_t T3;
 // ------------
 
 int main(int argc, char* argv[]) {
+	
 	// Inicializando vars. globais
+	for (int i=0; i<BUF_M; i++) {
+		pthread_cond_init(&waitFor[i], NULL);		// condicional
+		pthread_mutex_init(&bufferAccMtx[i], NULL);	// mutex
+		buffers[i] = malloc(sizeof(int) * BUF_N);	// buffers
+		for (int j=0; j<BUF_N; j++)					// preenchendo buffer TODO: manter isto?
+			buffers[i][j] = -1;						// marca elemento vazio
+	}
 	done = 0;
-	sem_init(&doneMtx, 0, 1);
-	for (int i=0; i<BUF_M; i++)
-		buffers[i] = malloc(sizeof(int) * BUF_N);
+	for (int i=0; i<BUF_M; i++)	// Esta inicialização permite que
+		bufferAcc[i] = 3;		// escrita saia na frente da leitura
+	
+	sem_init(&doneMtx, 0, 1);	// semáforo
 	
 	// Pegando primeiro elemento: tamanho do arquivo
 	fread(&size, sizeof(long long int), 1, stdin);
@@ -89,13 +110,13 @@ int main(int argc, char* argv[]) {
 	fseek(stdin, sizeof(long long int), SEEK_SET);
 #endif // DEBUG
 	
-	// Escrevendo no buffer
-	toBuffer();
-	
 	// Iniciando threads
 	pthread_create(&T1, NULL, maislonga, NULL);
 	pthread_create(&T2, NULL, trincas, NULL);
 	pthread_create(&T3, NULL, straights, NULL);
+	
+	// Escrevendo no buffer
+	toBuffer();
 	
 	// Recebendo threads de volta
 	RET_MAISLONGA* seq_mais_longa;	// resultado da T1
@@ -135,25 +156,37 @@ int main(int argc, char* argv[]) {
 
 
 
+
 // Funções
 // -----------
 
 void toBuffer() {
 	int i = 0;	// em qual buffer vamos escrever
-	while ( fread(buffers[i], sizeof(int), BUF_N, stdin) == BUF_N )
+	
+	// Loop principal
+	while ( 1 ) {
+		startWrite(i);
+		
+		// Escrita
+		// ---------------
+		if ( fread(buffers[i], sizeof(int), BUF_N, stdin) == BUF_N ) {
+			sem_wait(&doneMtx);
+			done = 1;	// avisa pra galera que não tem mais arquivo pra ler
+			sem_post(&doneMtx);
+		}
+		// ----------------
+		
+		endWrite(i);
+		
 		i = (i+1) % BUF_M;
-	sem_wait(&doneMtx);
-	done = 1;	// Avisa pra galera que não tem mais arquivo pra ler
-	sem_post(&doneMtx);
+	}
 }
-
-// Threads
 
 void* maislonga(void* args) {
 	long long int pos = 0L;			// posição que está sendo lida
-	int new = 0;	// número que acaba de ser lido
-	int old = -1;	// número anterior
-	char its_a_sequence = 0;		// 1 caso estejamos lendo uma sequência, 0 caso contrário
+	int new = 0;					// número que acaba de ser lido
+	int old = -1;					// número anterior
+	char its_a_sequence = 0;		// 1 se estamos lendo uma sequência, 0 caso contrário
 	
 	long long int longest_head = 0;	// início da sequencia mais longa
 	int longest_size = 0;			// tamanho da sequência mais longa
@@ -165,7 +198,10 @@ void* maislonga(void* args) {
 	
 	// Loop sobre os bufferes
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(i);
+		
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -178,7 +214,7 @@ void* maislonga(void* args) {
 			else if (new == old && its_a_sequence)	// já estávamos numa sequência
 				cur_size++;
 			else if (new != old && its_a_sequence) {	// sequência acabou
-				if (cur_size > longest_size) {	// seq. atual é a maior encontrada
+				if (cur_size > longest_size) {		// seq. atual é a maior encontrada
 					longest_size = cur_size;
 					longest_head = cur_head;
 					longest_val = cur_val;
@@ -187,9 +223,20 @@ void* maislonga(void* args) {
 			}
 			pos++;
 		}
-		if (i == BUF_M-1) {		// acabamos de ler o último buffer
+		// -----------------
+		
+		endRead(i);
+		
+		if (i == BUF_M-1) {						// se acabamos de ler o último buffer...
 			sem_wait(&doneMtx);
-			if (done) break;	// Meu trabalho acabou
+			if (done) {							// ...e se não há mais arquivo para ler
+				if (cur_size > longest_size) {	// seq. atual é a maior encontrada
+					longest_size = cur_size;
+					longest_head = cur_head;
+					longest_val = cur_val;
+				}
+				break;	// meu trabalho acabou
+			}
 			sem_post(&doneMtx);
 		}
 	}
@@ -210,7 +257,10 @@ void* trincas(void* args) {
 	int seq_size = 0;	// tamanho da sequência atual
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(i);
+		
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -228,6 +278,10 @@ void* trincas(void* args) {
 			} else				// new != old
 				seq_size = 0;
 		}
+		// -----------------
+		
+		endRead(i);
+		
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -246,7 +300,11 @@ void* straights(void* args) {
 	int next = 0;		// número que esperamos agora
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		
+		startRead(i);
+		
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			if (buffers[i][j] == next) {	// podemos começar uma seq.
 				if (next < 5)
@@ -259,6 +317,10 @@ void* straights(void* args) {
 			else		// não lemos o número esperado
 				next = 0;
 		}
+		// -----------------
+		
+		endRead(i);
+		
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -270,4 +332,33 @@ void* straights(void* args) {
 	int* ret = malloc(sizeof(int));
 	*ret = count;
 	pthread_exit((void*) ret);
+}
+
+
+void startRead(int i) {
+	pthread_mutex_lock( &bufferAccMtx[i] );					// só eu acesso buffers[i]
+	while (bufferAcc[i] == 3) {
+		pthread_cond_broadcast( &waitFor[i] );				// vou esperar que o escrito
+		pthread_cond_wait( &waitFor[i], &bufferAccMtx[i] );	// passe na minha frente
+	}
+	pthread_mutex_unlock( &bufferAccMtx[i] );				// ok, podem acessar buffers[i]
+}
+
+void endRead(int i) {
+	pthread_mutex_lock( &bufferAccMtx[i] );		// só eu acesso buffers[i]
+	bufferAcc[i]++;
+	pthread_mutex_unlock( &bufferAccMtx[i] );	// ok, podem acessar
+	pthread_cond_broadcast( &waitFor[i] );		// se escritor estava esperando, pode ir
+}
+
+void startWrite(int i) {
+	pthread_mutex_lock( &bufferAccMtx[i] );		// só eu acesso buffers[i]
+	while (bufferAcc[i] < 3)
+		pthread_cond_wait( &waitFor[i], &bufferAccMtx[i] );	// vou esperar todo mundo ler
+}
+
+void endWrite(int i) {
+	bufferAcc[i] = 0;
+	pthread_cond_broadcast( &waitFor[i] );
+	pthread_mutex_unlock( &bufferAccMtx[i] );	// ok, podem acessar buffers[i]
 }
