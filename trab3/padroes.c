@@ -20,11 +20,15 @@
 #ifdef DEBUG
 #define START pthread_mutex_lock(&out)
 #define LOG(msg, var)	printf("%11s: " msg, __func__, var); fflush(stdout)
+#define SLOG(msg, var)	printf(msg, var); fflush(stdout)
 #define SHOW()	for (int i=0; i<BUF_M; i++) { printf("[%d]", bufferAcc[i]); } printf("\n")
 #define END	pthread_mutex_unlock(&out)
 #else
+#define START ;
 #define LOG(msg, var) ;
+#define SLOG(msg, var)	;
 #define SHOW() ;
+#define END	;
 #endif
 
 
@@ -70,9 +74,10 @@ int bufferAcc[BUF_M];	// Conta quantas threads já leram buffer desde última es
 // Semáforos
 sem_t doneMtx;							// Mutex para guardar variável done
 // Condicionais
-pthread_cond_t waitFor[BUF_M];			// Bota threads em espera para ler/escrever num buffer
+pthread_cond_t canRead;					// Bota threads em espera para ler num buffer
+pthread_cond_t canWrite;				// Bota threads em espera para escrever num buffer
 // Mutexes
-pthread_mutex_t bufferAccMtx[BUF_M];	// Regula acesso aos buffers
+pthread_mutex_t bufferAccMtx[BUF_M];	// Regula acesso ao array bufferAcc
 // Threads
 pthread_t T1;
 pthread_t T2;
@@ -90,7 +95,6 @@ int main(int argc, char* argv[]) {
 	pthread_mutex_init(&out, NULL);	// TODO: remover
 
 	for (int i=0; i<BUF_M; i++) {
-		pthread_cond_init(&waitFor[i], NULL);		// condicional
 		pthread_mutex_init(&bufferAccMtx[i], NULL);	// mutex
 		buffers[i] = malloc(sizeof(int) * BUF_N);	// buffers
 		for (int j=0; j<BUF_N; j++)					// preenchendo buffer TODO: manter isto?
@@ -101,6 +105,8 @@ int main(int argc, char* argv[]) {
 		bufferAcc[i] = 3;		// escrita saia na frente da leitura
 	
 	sem_init(&doneMtx, 0, 1);	// semáforo
+	pthread_cond_init(&canRead, NULL);		// condicional
+	pthread_cond_init(&canWrite, NULL);		// condicional
 	
 	// Pegando primeiro elemento: tamanho do arquivo
 	fread(&size, sizeof(long long int), 1, stdin);
@@ -178,8 +184,11 @@ void toBuffer() {
 		
 		// Escrita
 		// ---------------
-		if ( fread(buffers[i], sizeof(int), BUF_N, stdin) == BUF_N ) {
+		int effective_read = fread(buffers[i], sizeof(int), BUF_N, stdin);
+		if ( effective_read == BUF_N ) {
 			LOG("escrevi em buffers[%i]\n", i);
+		} else {	// fread não leu todos os elementos que cabiam no buffer
+			buffers[i][effective_read] = -1;
 			sem_wait(&doneMtx);
 			done = 1;	// avisa pra galera que não tem mais arquivo pra ler
 			sem_post(&doneMtx);
@@ -352,44 +361,47 @@ void* straights(void* args) {
 
 
 void startRead(int i, int th) {
+	START; LOG("thread %d tenta pegar mutex\n", th); END;
 	pthread_mutex_lock( &bufferAccMtx[i] );					// só eu acesso buffers[i]
 	START;
 	LOG("bufferAcc[%d]", i);
-	printf(" = %d\n", bufferAcc[i]);
+	SLOG(" = %d\n", bufferAcc[i]);
 	SHOW();
 	END;
 	while (bufferAcc[i] == 3) {
 		START; LOG("thread %d entra em espera\n", th); END;
-		pthread_cond_broadcast( &waitFor[i] );				// vou esperar que o escrito
-		pthread_cond_wait( &waitFor[i], &bufferAccMtx[i] );	// passe na minha frente
+		pthread_cond_broadcast( &canWrite );				// vou esperar que o escritor
+		pthread_cond_wait( &canRead, &bufferAccMtx[i] );	// passe na minha frente
 	}
 	pthread_mutex_unlock( &bufferAccMtx[i] );				// ok, podem acessar buffers[i]
 }
 
 void endRead(int i, int th) {
+	START; LOG("thread %d tenta pegar mutex\n", th); END;
 	pthread_mutex_lock( &bufferAccMtx[i] );		// só eu acesso buffers[i]
 	bufferAcc[i]++;
 	START;
 	LOG("thread %d termina de ler\n", th);
 	LOG("bufferAcc[%d]++", i);
-	printf(" = %d\n", bufferAcc[i]);
+	SLOG(" = %d\n", bufferAcc[i]);
 	SHOW();
 	END;
+	pthread_cond_broadcast( &canWrite );		// se escritor estava esperando, pode tentar escrever
 	pthread_mutex_unlock( &bufferAccMtx[i] );	// ok, podem acessar
-	pthread_cond_broadcast( &waitFor[i] );		// se escritor estava esperando, pode ir
 }
 
 void startWrite(int i) {
+	START; LOG("toBuffer tenta pegar mutex\n", 0); END;
 	pthread_mutex_lock( &bufferAccMtx[i] );		// só eu acesso buffers[i]
 	START;
 	LOG("bufferAcc[%d]", i);
-	printf(" = %d\n", bufferAcc[i]);
+	SLOG(" = %d\n", bufferAcc[i]);
 	SHOW();
 	END;
 	while (bufferAcc[i] < 3) {					// nem todo mundo leu este buffer ainda
 		START; LOG("toBuffer entra em espera\n", 0); END;
-		pthread_cond_broadcast(&waitFor[i]);
-		pthread_cond_wait( &waitFor[i], &bufferAccMtx[i] );	// vou esperar todo mundo ler
+		pthread_cond_broadcast(&canRead);					// vou esperar que todos os
+		pthread_cond_wait( &canWrite, &bufferAccMtx[i] );	// leitores leiam
 	}
 }
 
@@ -397,9 +409,9 @@ void endWrite(int i) {
 	bufferAcc[i] = 0;
 	START;
 	LOG("bufferAcc[%d]", i);
-	printf(" <- 0\n", 0);
+	SLOG(" <- 0\n", 0);
 	SHOW();
 	END;
-	pthread_cond_broadcast( &waitFor[i] );
+	pthread_cond_broadcast( &canRead );			// se leitor estava esperando, pode ir ler
 	pthread_mutex_unlock( &bufferAccMtx[i] );	// ok, podem acessar buffers[i]
 }
