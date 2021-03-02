@@ -58,6 +58,7 @@ sem_t doneMtx;	// Mutex para guardar variável done
 // Threads
 pthread_t T1;
 pthread_t T2;
+pthread_t T3;
 
 
 
@@ -94,22 +95,27 @@ int main(int argc, char* argv[]) {
 	// Iniciando threads
 	pthread_create(&T1, NULL, maislonga, NULL);
 	pthread_create(&T2, NULL, trincas, NULL);
+	pthread_create(&T3, NULL, straights, NULL);
 	
 	// Recebendo threads de volta
 	RET_MAISLONGA* seq_mais_longa;	// resultado da T1
 	int* num_trincas;				// resultado da T2
+	int* num_straights;				// resultado da T3
 	void* temp;
 	pthread_join(T1, &temp);
 	seq_mais_longa = (RET_MAISLONGA*) temp;
 	pthread_join(T2, &temp);
 	num_trincas = (int*) temp;
+	pthread_join(T3, &temp);
+	num_straights = (int*) temp;
 	
-	// Lendo resultados:
+	// Imprimindo resultados:
 	printf(	"Maior sequência de valores idênticos: %lld %d %d\n",
 			seq_mais_longa->pos,
 			seq_mais_longa->size,
 			seq_mais_longa->val);
 	printf("Quantidade de ocorrências de sequências contınuas de tamanho 3 do mesmo valor: %d\n", *num_trincas);
+	printf("Quantidade de ocorrências da sequência<012345>: %d\n", *num_straights);
 	for (int i=0; i<BUF_M; i++) {
 		printf("[ ");
 		for (int j=0; j<BUF_N; j++)
@@ -123,6 +129,7 @@ int main(int argc, char* argv[]) {
 		free(buffers[i]);
 	free(seq_mais_longa);
 	free(num_trincas);
+	free(num_straights);
 	return 0;
 }
 
@@ -203,24 +210,19 @@ void* trincas(void* args) {
 	int seq_size = 0;	// tamanho da sequência atual
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		LOG("buf %d\n", i);
 		// Loop sobre os elementos de um dos bufferes
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
 			if (new == old) {			// estamos em uma sequência
-				LOG("repetição em [%d]", i); LOG("[%d]:\n", j);
 				if (seq_size == 0) {		// seq. nova
-					LOG("size=0\n", 0);
 					seq_size = 2;
 				}
 				else if (seq_size == 2) {	// seq. é um trio
-					LOG("size=2\n", 0);
 					seq_size = 3;
 					count++;
 				}
 				else if (seq_size == 3) {	// acabamos de sair de uma seq.
-					LOG("size=3\n", 0);
 					seq_size = 0;
 				}
 			} else				// new != old
@@ -238,4 +240,34 @@ void* trincas(void* args) {
 	*ret = count;
 	pthread_exit((void*) ret);
 }
-void* straights(void* args);
+
+void* straights(void* args) {
+	int count = 0;		// qtd. de sequências 012345
+	int next = 0;		// número que esperamos agora
+	
+	for (int i=0; 1; i = (i+1) % BUF_M) {
+		// Loop sobre os elementos de um dos bufferes
+		for (int j=0; j<BUF_N; j++) {
+			if (buffers[i][j] == next) {	// podemos começar uma seq.
+				if (next < 5)
+					next++;
+				else {		// next == 5, formamos a sequência!
+					count++;
+					next = 0;
+				}
+			}
+			else		// não lemos o número esperado
+				next = 0;
+		}
+		if (i == BUF_M-1) {		// acabamos de ler o último buffer
+			sem_wait(&doneMtx);
+			if (done) break;	// Meu trabalho acabou
+			sem_post(&doneMtx);
+		}
+	}
+	sem_post(&doneMtx);	// acabamos de acessar var. global done
+	
+	int* ret = malloc(sizeof(int));
+	*ret = count;
+	pthread_exit((void*) ret);
+}

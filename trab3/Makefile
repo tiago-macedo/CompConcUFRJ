@@ -14,6 +14,9 @@ build: padroes.c
 gerateste: gerateste.c
 	gcc gerateste.c -o gera
 
+geramanual: geramanual.c
+	gcc geramanual.c -o gera
+
 .PHONY: test
 test:
 	@echo "====================="
