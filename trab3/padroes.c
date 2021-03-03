@@ -1,8 +1,8 @@
 /*==========================*\
 || Identificador de padrões ||
 || ------------------------ ||
-|| Tiago Santos BUF_Martins de  ||
-|| BUF_Macedo                   ||
+|| Tiago Santos Martins de  ||
+|| Macedo                   ||
 || DRE 116022689            ||
 \*==========================*/
 
@@ -18,17 +18,13 @@
 #define BUF_N (16)	// Qtd. de inteiros em cada buffer
 #define BUF_M (4)	// Qtd. de buffers
 #ifdef DEBUG
-#define START pthread_mutex_lock(&out)
 #define LOG(msg, var)	printf("%11s: " msg, __func__, var); fflush(stdout)
 #define SLOG(msg, var)	printf(msg, var); fflush(stdout)
-#define SHOW()	for (int i=0; i<BUF_M; i++) { printf("[%d]", bufferAcc[i]); } printf("\n")
-#define END	pthread_mutex_unlock(&out)
+#define SHOW()	for (int i=0; i<BUF_M; i++) { sem_wait(readCountMtx+i); printf("[%d]", readCount[i]); sem_post(readCountMtx+i); }  printf("\n")
 #else
-#define START ;
 #define LOG(msg, var) ;
 #define SLOG(msg, var)	;
 #define SHOW() ;
-#define END	;
 #endif
 
 
@@ -52,6 +48,10 @@ void* maislonga(void*);	// Thread que cata seq. de números maislonga
 void* trincas(void*);	// Thread que cata seq. de três números iguais
 void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 
+void startRead(int);	// Entrada da leitura
+void endRead(int);		// Saída da leitura
+void startWrite(int);	// Entrada da escrita
+void endWrite(int);		// Saída da escrita
 
 
 
@@ -59,10 +59,14 @@ void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 // ---------------
 
 int* buffers[BUF_M];	// Array de ponteiros para buffers
-long long int size;		// Quantodade de inteiros no arquivo
+long long int size;		// Quantidade de inteiros no arquivo
 char done;				// 0 enquanto leitura do arquivo ainda estiver ocorrendo
+int readCount[BUF_M];	// Array que conta quantas threads leitoras já passaram por um buffer
 // Semáforos
-sem_t doneMtx;	// Mutex para guardar variável done
+sem_t doneMtx;					// Mutex para guardar variável done
+sem_t readCountMtx[BUF_M];		// Array de mutexes para guardar readCount[]
+sem_t canRead[BUF_M];			// Quantas threads leitoras podem ler buffers[i]
+sem_t canWrite[BUF_M];			// Binario, se função escritora pode escrever buffers[i]
 // Threads
 pthread_t T1;
 pthread_t T2;
@@ -78,8 +82,13 @@ int main(int argc, char* argv[]) {
 	// Inicializando vars. globais
 	done = 0;
 	sem_init(&doneMtx, 0, 1);
-	for (int i=0; i<BUF_M; i++)
+	for (int i=0; i<BUF_M; i++) {
+		readCount[i] = 3;				// inicializado com 3: no início, escritor deve sair escrevendo
 		buffers[i] = malloc(sizeof(int) * BUF_N);
+		sem_init(readCountMtx + i, 0, 1);
+		sem_init(canRead + i, 0, 0);	// inicializado com 0: escritor deve escrever primeiro
+		sem_init(canWrite + i, 0, 1);
+	}
 	
 	// Pegando primeiro elemento: tamanho do arquivo
 	fread(&size, sizeof(long long int), 1, stdin);
@@ -97,13 +106,13 @@ int main(int argc, char* argv[]) {
 	fseek(stdin, sizeof(long long int), SEEK_SET);
 #endif // DEBUG
 	
-	// Escrevendo no buffer
-	toBuffer();
-	
 	// Iniciando threads
 	pthread_create(&T1, NULL, maislonga, NULL);
 	pthread_create(&T2, NULL, trincas, NULL);
 	pthread_create(&T3, NULL, straights, NULL);
+	
+	// Escrevendo no buffer
+	toBuffer();
 	
 	// Recebendo threads de volta
 	RET_MAISLONGA* seq_mais_longa;	// resultado da T1
@@ -161,10 +170,10 @@ void toBuffer() {
 		if ( effective_read == BUF_N ) {
 			LOG("escrevi em buffers[%i]\n", i);
 		} else {	// fread não leu todos os elementos que cabiam no buffer
-			buffers[i][effective_read] = -1;
 			sem_wait(&doneMtx);
 			done = 1;	// avisa pra galera que não tem mais arquivo pra ler
 			sem_post(&doneMtx);
+			break;
 		}
 		// ----------------
 		
@@ -177,6 +186,7 @@ void toBuffer() {
 // Threads
 
 void* maislonga(void* args) {
+	LOG("-------\n", 0);
 	long long int pos = 0L;			// posição que está sendo lida
 	int new = 0;	// número que acaba de ser lido
 	int old = -1;	// número anterior
@@ -192,7 +202,10 @@ void* maislonga(void* args) {
 	
 	// Loop sobre os bufferes
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(i);
+		
+		// Leitura
+		// -------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -214,6 +227,11 @@ void* maislonga(void* args) {
 			}
 			pos++;
 		}
+		LOG("T1 leu buffer %d\n", i);
+		// -------------
+		
+		endRead(i);
+		
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -231,13 +249,17 @@ void* maislonga(void* args) {
 }
 
 void* trincas(void* args) {
+	LOG("-------\n", 0);
 	int count = 0;		// qtd. de trincas
 	int new; int old;	// número que acaba de ser lido e anterior
 	
 	int seq_size = 0;	// tamanho da sequência atual
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(i);
+		
+		// Leitura
+		// -------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -255,6 +277,11 @@ void* trincas(void* args) {
 			} else				// new != old
 				seq_size = 0;
 		}
+		LOG("T2 leu buffer %d\n", i);
+		// -------------
+		
+		endRead(i);
+		
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -269,11 +296,15 @@ void* trincas(void* args) {
 }
 
 void* straights(void* args) {
+	LOG("-------\n", 0);
 	int count = 0;		// qtd. de sequências 012345
 	int next = 0;		// número que esperamos agora
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(i);
+		
+		// Leitura
+		// -------------
 		for (int j=0; j<BUF_N; j++) {
 			if (buffers[i][j] == next) {	// podemos começar uma seq.
 				if (next < 5)
@@ -286,6 +317,11 @@ void* straights(void* args) {
 			else		// não lemos o número esperado
 				next = 0;
 		}
+		LOG("T3 leu buffer %d\n", i);
+		// -------------
+		
+		endRead(i);
+		
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -297,4 +333,36 @@ void* straights(void* args) {
 	int* ret = malloc(sizeof(int));
 	*ret = count;
 	pthread_exit((void*) ret);
+}
+
+void startRead(int i) {
+	LOG("quero ler %d\n", i);
+	sem_wait(canRead + i);
+
+}
+
+void endRead(int i) {
+	LOG("(%d)\n", i);
+	sem_wait(readCountMtx + i);
+	LOG("readCount[%d]", i);
+	SLOG(" = %d\n", readCount[i]);
+	if (readCount[i] == 2)		// esta thread foi a última a ler este buffer
+		sem_post(canWrite + i);	// permite que escritor sobreescreva buffer
+	else						// se readCount[i] < 2
+		readCount[i]++;
+	sem_post(readCountMtx + i);
+}
+
+void startWrite(int i) {
+	LOG("quero escrever %d\n", i);
+	sem_wait(canWrite + i);
+}
+
+void endWrite(int i) {
+	LOG("(%d)\n", i);
+	sem_wait(readCountMtx + i);
+	readCount[i] = 0;			// zera contagem de leitura
+	sem_post(readCountMtx + i);
+	for (int k=0; k<3; k++)
+		sem_post(canRead + i);	// coloca sinais que permitem leitura
 }
