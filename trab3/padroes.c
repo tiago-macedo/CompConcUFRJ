@@ -1,8 +1,8 @@
 /*==========================*\
 || Identificador de padrões ||
 || ------------------------ ||
-|| Tiago Santos BUF_Martins de  ||
-|| BUF_Macedo                   ||
+|| Tiago Santos Martins de  ||
+|| Macedo                   ||
 || DRE 116022689            ||
 \*==========================*/
 
@@ -17,10 +17,18 @@
 // --------
 #define BUF_N (16)	// Qtd. de inteiros em cada buffer
 #define BUF_M (4)	// Qtd. de buffers
+#define N_THREADS (3)
+
 #ifdef DEBUG
-#define LOG(msg, var) printf(msg, var)
+#define START pthread_mutex_lock(&out)
+#define LOG(msg, var)	printf("%11s: " msg, __func__, var); fflush(stdout)
+#define SLOG(msg, var)	printf(msg, var); fflush(stdout)
+#define END	pthread_mutex_unlock(&out)
 #else
+#define START ;
 #define LOG(msg, var) ;
+#define SLOG(msg, var)	;
+#define END	;
 #endif
 
 
@@ -44,6 +52,12 @@ void* maislonga(void*);	// Thread que cata seq. de números maislonga
 void* trincas(void*);	// Thread que cata seq. de três números iguais
 void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 
+void startRead(int, int);	// Antecede leitura de buffer
+void endRead(int, int);		// Sucede leitura de buffer
+void startWrite(int);	// Antecede escrita em buffer
+void endWrite(int);		// Sucede escrita em buffer
+
+void show();
 
 
 
@@ -51,10 +65,16 @@ void* straights(void*);	// Thread que cata "0 1 2 3 4 5"
 // ---------------
 
 int* buffers[BUF_M];	// Array de ponteiros para buffers
-long long int size;		// Quantodade de inteiros no arquivo
+long long int size;		// Quantoda de de inteiros no arquivo
 char done;				// 0 enquanto leitura do arquivo ainda estiver ocorrendo
+char analyzed[N_THREADS][BUF_M];	// Marca se buffer já foi visitado por uma thread desde última escrita
 // Semáforos
 sem_t doneMtx;	// Mutex para guardar variável done
+// Variáveis Condicionais
+pthread_cond_t canRead;		// Onde threads de leitura esperam
+pthread_cond_t canWrite;		// Onde thread de escrita espera
+// Mutexes
+pthread_mutex_t analyzedMtx;	// Mutex que guarda var. global analyzed
 // Threads
 pthread_t T1;
 pthread_t T2;
@@ -70,8 +90,14 @@ int main(int argc, char* argv[]) {
 	// Inicializando vars. globais
 	done = 0;
 	sem_init(&doneMtx, 0, 1);
-	for (int i=0; i<BUF_M; i++)
+	pthread_cond_init(&canRead, NULL);
+	pthread_cond_init(&canWrite, NULL);
+	pthread_mutex_init(&analyzedMtx, NULL);
+	for (int i=0; i<BUF_M; i++) {
 		buffers[i] = malloc(sizeof(int) * BUF_N);
+		for (int j=0; j<N_THREADS; j++)
+			analyzed[j][i] = 1;
+	}
 	
 	// Pegando primeiro elemento: tamanho do arquivo
 	fread(&size, sizeof(long long int), 1, stdin);
@@ -89,13 +115,13 @@ int main(int argc, char* argv[]) {
 	fseek(stdin, sizeof(long long int), SEEK_SET);
 #endif // DEBUG
 	
-	// Escrevendo no buffer
-	toBuffer();
-	
 	// Iniciando threads
 	pthread_create(&T1, NULL, maislonga, NULL);
 	pthread_create(&T2, NULL, trincas, NULL);
 	pthread_create(&T3, NULL, straights, NULL);
+	
+	// Escrevendo no buffer
+	toBuffer();
 	
 	// Recebendo threads de volta
 	RET_MAISLONGA* seq_mais_longa;	// resultado da T1
@@ -140,11 +166,23 @@ int main(int argc, char* argv[]) {
 
 void toBuffer() {
 	int i = 0;	// em qual buffer vamos escrever
-	while ( fread(buffers[i], sizeof(int), BUF_N, stdin) == BUF_N )
+	int actually_read;
+	// Loop principal
+	while ( 1 ) {
+		startWrite(i);
+		// Escrita
+		// ----------
+		actually_read = fread(buffers[i], sizeof(int), BUF_N, stdin);
+		// ----------
+		endWrite(i);
+		if (actually_read < BUF_N) {	// Erro, ou arquivo acabou
+			sem_wait(&doneMtx);
+			done = 1;	// Avisa pra galera que não tem mais arquivo pra ler
+			sem_post(&doneMtx);
+			break;
+		}
 		i = (i+1) % BUF_M;
-	sem_wait(&doneMtx);
-	done = 1;	// Avisa pra galera que não tem mais arquivo pra ler
-	sem_post(&doneMtx);
+	}
 }
 
 // Threads
@@ -165,7 +203,9 @@ void* maislonga(void* args) {
 	
 	// Loop sobre os bufferes
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(0, i);
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -187,6 +227,9 @@ void* maislonga(void* args) {
 			}
 			pos++;
 		}
+		LOG("T0 leu\n", 0);
+		// -----------------
+		endRead(0, i);
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -210,7 +253,9 @@ void* trincas(void* args) {
 	int seq_size = 0;	// tamanho da sequência atual
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(1, i);
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			old = new;
 			new = buffers[i][j];
@@ -228,6 +273,9 @@ void* trincas(void* args) {
 			} else				// new != old
 				seq_size = 0;
 		}
+		LOG("T1 leu\n", 0);
+		// -----------------
+		endRead(1, i);
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -246,7 +294,9 @@ void* straights(void* args) {
 	int next = 0;		// número que esperamos agora
 	
 	for (int i=0; 1; i = (i+1) % BUF_M) {
-		// Loop sobre os elementos de um dos bufferes
+		startRead(2, i);
+		// Leitura
+		// -----------------
 		for (int j=0; j<BUF_N; j++) {
 			if (buffers[i][j] == next) {	// podemos começar uma seq.
 				if (next < 5)
@@ -259,6 +309,9 @@ void* straights(void* args) {
 			else		// não lemos o número esperado
 				next = 0;
 		}
+		LOG("T2 leu\n", 0);
+		// -----------------
+		endRead(2, i);
 		if (i == BUF_M-1) {		// acabamos de ler o último buffer
 			sem_wait(&doneMtx);
 			if (done) break;	// Meu trabalho acabou
@@ -270,4 +323,63 @@ void* straights(void* args) {
 	int* ret = malloc(sizeof(int));
 	*ret = count;
 	pthread_exit((void*) ret);
+}
+
+
+void startRead(int th, int i) {
+	LOG("T %d ", th); SLOG("buf[%d]\n", i);
+	show();
+	pthread_mutex_lock(&analyzedMtx);
+	while (analyzed[th][i])				// Se já li este buffer desde que ele foi escrito
+		pthread_cond_wait(&canRead, &analyzedMtx);	// espere.
+	pthread_mutex_unlock(&analyzedMtx);
+}
+
+void endRead(int th, int i) {
+	LOG("T %d ", th); SLOG("buf[%d]\n", i);
+	pthread_mutex_lock(&analyzedMtx);
+	analyzed[th][i] = 1;				// marca que já li o buffer
+	pthread_cond_broadcast(&canWrite);	// vai ver o escritor já pode escrever neste buffer
+	pthread_mutex_unlock(&analyzedMtx);
+	show();
+}
+
+void startWrite(int i) {
+	LOG("%d\n", i);
+	for (int k=0; k<N_THREADS; k++) {	// Para todas as threads leitoras
+		while (1) {
+			pthread_mutex_lock(&analyzedMtx);
+			if (analyzed[k][i]) {		// enquanto uma ainda não houver lido desde que escrevi
+				break;
+			}
+			LOG("esperando thread %d\n", k);
+			pthread_cond_broadcast(&canRead);
+			pthread_cond_wait(&canWrite, &analyzedMtx);	// espere.
+			pthread_mutex_unlock(&analyzedMtx);
+		}
+		pthread_mutex_unlock(&analyzedMtx);
+	}
+	LOG("saindo\n", 0);
+}
+
+void endWrite(int i) {
+	LOG("%d\n", i);
+	for (int k=0; k<N_THREADS; k++) {		// Para todas as threads leitoras
+		pthread_mutex_lock(&analyzedMtx);
+		analyzed[k][i] = 0;				// marco que ela ainda não leu o que escrevi aqui
+		pthread_mutex_unlock(&analyzedMtx);
+	}
+	LOG("saí do loop\n", 0);
+	show();
+	pthread_cond_broadcast(&canRead);	// e aviso.
+}
+
+void show() {
+	pthread_mutex_lock(&analyzedMtx);
+	for (int i=0; i<N_THREADS; i++) {
+		for (int j=0; j<BUF_M; j++)
+			printf("[%d]", analyzed[i][j]);
+		printf("\n");
+	}
+	pthread_mutex_unlock(&analyzedMtx);
 }
