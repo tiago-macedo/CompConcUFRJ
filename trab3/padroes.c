@@ -328,7 +328,9 @@ void* straights(void* args) {
 
 void startRead(int th, int i) {
 	LOG("T %d ", th); SLOG("buf[%d]\n", i);
+#ifdef DEBUG
 	show();
+#endif
 	pthread_mutex_lock(&analyzedMtx);
 	while (analyzed[th][i])				// Se já li este buffer desde que ele foi escrito
 		pthread_cond_wait(&canRead, &analyzedMtx);	// espere.
@@ -341,7 +343,9 @@ void endRead(int th, int i) {
 	analyzed[th][i] = 1;				// marca que já li o buffer
 	pthread_cond_broadcast(&canWrite);	// vai ver o escritor já pode escrever neste buffer
 	pthread_mutex_unlock(&analyzedMtx);
+#ifdef DEBUG
 	show();
+#endif
 }
 
 void startWrite(int i) {
@@ -370,7 +374,9 @@ void endWrite(int i) {
 		pthread_mutex_unlock(&analyzedMtx);
 	}
 	LOG("saí do loop\n", 0);
+#ifdef DEBUG
 	show();
+#endif
 	pthread_cond_broadcast(&canRead);	// e aviso.
 }
 
